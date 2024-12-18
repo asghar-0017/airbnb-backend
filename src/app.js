@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import ConnectDB from "./dbConnector/index.js";
 import config from "./config/index.js";
 import allRoutes from "./routes/allRoutes/index.js";
+import authRoute from "./routes/authRoute/index.js";
 
 dotenv.config();
 
@@ -20,7 +21,8 @@ const logger = {
   
 
 app.use(express.json());
-allRoutes(app)
+// allRoutes(app)
+authRoute(app)
 app.get("/", (req, res) => {
   res.send({ code: 200, message: "Server is running successfully." });
 });
