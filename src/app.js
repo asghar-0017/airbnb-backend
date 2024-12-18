@@ -32,8 +32,7 @@ app.get('/', (req, res) => {
 const startServer = async () => {
   try {
     await ConnectDB(config.db, console);
-    console.log('✅ Database initialized.');
-
+    console.log('✅ Database initialized.')
     const PORT = process.env.PORT || 4000;
     app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
   } catch (error) {
