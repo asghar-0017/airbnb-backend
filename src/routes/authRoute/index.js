@@ -1,8 +1,8 @@
-import signUpController from '../../controller/authController/index.js'
+import {signUp,login} from '../../controller/authController/index.js'
 
 const authRoute=async(app)=>{
-    app.post('/signUp',signUpController.signUp)
-    app.post('/login',signUpController.login)
+    app.post('/signUp',signUp)
+    app.post('/login',login)
 }
 
 export default authRoute

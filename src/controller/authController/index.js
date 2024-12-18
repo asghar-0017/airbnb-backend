@@ -4,8 +4,8 @@ import authUser from '../../model/authModel/index.js';
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-const authController = {
-  signUp: async (req, res) => {
+// const authController = {
+ export const signUp= async (req, res) => {
     try {
       const { userName, email, password } = req.body;
       const existingUser = await authUser.findOne({ email });
@@ -25,9 +25,9 @@ const authController = {
     } catch (error) {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
-  },
+  }
 
-  login: async (req, res) => {
+  export const login=async (req, res) => {
     try {
       const { email, password } = req.body;
       const user = await authUser.findOne({ email });
@@ -46,9 +46,9 @@ const authController = {
     } catch (error) {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
-  },
+  }
 
-  verifyToken: async (req, res) => {
+  export const verifyToken=async (req, res) => {
     try {
       const { email, token } = req.body;
       const user = await authUser.findOne({ email });
@@ -67,7 +67,7 @@ const authController = {
     } catch (error) {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
-  },
-};
+  }
+// };
 
-export default authController;
+// export default authController;
