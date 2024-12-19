@@ -13,12 +13,12 @@ const authController = {
         return res.status(403).json({ message: 'User already exists' });
       }
       const hashedPassword = await bcrypt.hash(password, 10);
-      const newUser = new authUser({ userName, email, password: hashedPassword });
-      const token = jwt.sign({ userId: newUser._id, email: newUser.email }, JWT_SECRET, { expiresIn: '1h' });
-      newUser.verifyToken = token;
+      const user = new authUser({ userName, email, password: hashedPassword });
+      const token = jwt.sign({ userId: user._id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
+      user.verifyToken = token;
 
-      await newUser.save();
-      res.status(201).json({ message: 'User created successfully',token });
+      await user.save();
+      res.status(201).json({ message: 'User created successfully',token,user });
     } catch (error) {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
@@ -38,7 +38,7 @@ const authController = {
       const token = jwt.sign({ userId: user._id, email: user.email }, JWT_SECRET, { expiresIn: '1h' });
       user.verifyToken = token;
       await user.save();
-      res.status(200).json({ token });
+      res.status(200).json({ token ,user});
     } catch (error) {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
