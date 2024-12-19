@@ -66,6 +66,35 @@ const authController = {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
+  logout: async (req, res) => {
+    try {
+      const token = req.headers['authorization']?.split(' ')[1]; 
+      if (!token) {
+        return res.status(400).json({ message: 'Token is required' });
+      }
+        jwt.verify(token, JWT_SECRET, async (err, decoded) => {
+        if (err) {
+          return res.status(400).json({ message: 'Token is invalid or expired' });
+        }
+        const { userId } = decoded;
+        const user = await authUser.findById(userId);
+        if (!user) {
+          return res.status(404).json({ message: 'User not found' });
+        }
+          if (!user.verifyToken || user.verifyToken !== token) {
+          return res.status(400).json({ message: 'Already logged out or token is invalid' });
+        }
+  
+        user.verifyToken = null; 
+        await user.save();
+  
+        res.status(200).json({ message: 'Logged out successfully' });
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    }
+  },
+  
 };
 
 export default authController;

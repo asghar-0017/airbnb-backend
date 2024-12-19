@@ -48,16 +48,34 @@ export const listingController = {
     }
   },
 
-  getLocationByListing: async (req, res) => {
+  getListingsByHostId: async (req, res) => {
     try {
-      const location = await Location.findOne({ listingId: req.params.listingId });
-      if (!location) {
-        return res.status(404).json({ message: 'Location not found' });
+      const hostId = req.params.hostId; 
+      const listing = await Listing.find({hostId}); 
+
+      if (!listing) {
+        return res.status(404).json({ message: 'Listing not found' });
       }
-      res.status(200).json(location);
+
+      res.status(200).json({ message: 'Listing fetched successfully', listing });
     } catch (error) {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
+  getListingById: async (req, res) => {
+    try {
+      const id = req.params.id; 
+      const listing = await Listing.findById(id); 
+
+      if (!listing) {
+        return res.status(404).json({ message: 'Listing not found' });
+      }
+
+      res.status(200).json({ message: 'Listing fetched successfully', listing });
+    } catch (error) {
+      res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    }
+  },
+
 };
 

@@ -18,6 +18,7 @@ const authRoute = (app) => {
   
 
   app.post('/verify-token', authController.verifyToken);
+  app.post('/logout', authController.logout);
 };
 
 export default authRoute;
