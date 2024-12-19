@@ -51,10 +51,12 @@ const authController = {
         return res.status(400).json({ message: 'Token is required' });
       }
       jwt.verify(token, JWT_SECRET, async (err, decoded) => {
+        console.log("User ",decoded)
         if (err) {
           return res.status(400).json({ message: 'Token is invalid or expired' });
         }
         const user = await authUser.findOne({ _id: decoded.userId });
+        console.log("User",user)
         if (!user || user.verifyToken !== token) {
           return res.status(400).json({ message: 'Invalid token' });
         }

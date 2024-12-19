@@ -1,41 +1,50 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const listingSchema = new mongoose.Schema({
-  hostId: { type: mongoose.Schema.Types.ObjectId, ref: 'Host', required: true },
-  placeType: { 
-    type: String, 
-    enum: ['House', 'Apartment', 'Shared Room', 'Hostel'], 
-    required: true 
+  hostId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Host',
+    required: true,
   },
-  roomType: { 
-    type: String, 
-    enum: ['Entire Place', 'A Room', 'A Shared Room'], 
-    required: true 
+  placeType: {
+    type: String,
+    enum: ['House', 'Apartment', 'Shared Room'],
+    required: true,
   },
+  roomType: {
+    type: String,
+    enum: ['Entire Place', 'A Room', 'A Shared Room'],
+    required: true,
+  },
+  location: {
+    street: { type: String, required: false },
+    flat: { type: String },
+    city: { type: String, required: false },
+    town: { type: String },
+    postcode: { type: String, required: false },
+    mapLocation: {
+      lat: { type: Number, required: true },
+      lng: { type: Number, required: true },
+    },
+  },
+  guestCapacity: { type: Number, required: true },
+  bedrooms: { type: Number, required: true },
+  beds: { type: Number, required: true },
+  bathrooms: { type: Number, required: true },
+  amenities: [String],
+  photos: [String],
   title: { type: String, required: true },
   description: { type: String, required: true },
   weekdayPrice: { type: Number, required: true },
   weekendPrice: { type: Number, required: true },
-  commissionRate: { type: Number, default: 13.00 },
-  actualPrice: { 
-    type: Number, 
+  commission: { type: Number, default: 13 },
+  actualPrice: {
+    type: Number,
+    required: true,
     default: function () {
-      return this.weekdayPrice - (this.weekdayPrice * this.commissionRate) / 100;
-    }
-  },
-  photos: { 
-    type: [String], 
-    validate: {
-      validator: function (photos) {
-        return photos.length >= 3 && photos.length <= 8;
-      },
-      message: 'You must upload between 3 and 8 photos.',
+      return Math.round((this.weekdayPrice + this.weekendPrice) * (1 + this.commission / 100));
     },
   },
-  amenities: [String], // e.g., ['WiFi', 'TV', 'Kitchen']
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now },
-});
+}, { timestamps: true });
 
-const ListingModel = mongoose.model('Listing', listingSchema);
-export default ListingModel
+export default mongoose.model('Listing', listingSchema);
