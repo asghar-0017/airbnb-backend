@@ -18,11 +18,11 @@ export const listingController = {
         weekendPrice,
       } = req.body;
 
-      if (!req.files || req.files.length < 3) {
-        return res.status(400).json({ message: 'At least 3 photos are required.' });
-      }
+      // if (!req.files || req.files.length < 3) {
+      //   return res.status(400).json({ message: 'At least 3 photos are required.' });
+      // }
 
-      const photos = req.files.map((file) => file.path);
+      // const photos = req.files.map((file) => file.path);
 
       const newListing = new Listing({
         hostId: req.user._id,
@@ -34,7 +34,7 @@ export const listingController = {
         beds,
         bathrooms,
         amenities,
-        photos,
+        // photos,
         title,
         description,
         weekdayPrice,

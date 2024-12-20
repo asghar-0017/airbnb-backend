@@ -45,6 +45,14 @@ const listingSchema = new mongoose.Schema({
       return Math.round((this.weekdayPrice + this.weekendPrice) * (1 + this.commission / 100));
     },
   },
+  bookings: [
+    {
+      userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+      startDate: { type: Date, required: true },
+      endDate: { type: Date, required: true },
+      totalPrice: { type: Number, required: true },
+    },
+  ],
 }, { timestamps: true });
 
 export default mongoose.model('Listing', listingSchema);
