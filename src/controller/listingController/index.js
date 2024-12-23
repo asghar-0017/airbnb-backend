@@ -1,3 +1,4 @@
+import listingModel from '../../model/listingModel/index.js';
 import Listing from '../../model/listingModel/index.js';
 
 export const listingController = {
@@ -86,6 +87,20 @@ export const listingController = {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
+
+  getAllListings:async(req,res)=>{
+    try{
+      const data=await Listing.find()
+      if (!data) {
+        return res.status(404).json({ message: 'Listing not found' });
+      }
+        res.status(200).json({ message: 'Listing fetched successfully', data });
+      
+    }catch(error){
+      res.status(500).json({ message: 'Internal Server Error', error: error.message });
+
+    }
+  }
 
 };
 
