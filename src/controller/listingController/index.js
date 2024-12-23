@@ -28,11 +28,11 @@ export const listingController = {
       
       } = req.body;
 
-      // if (!req.files || req.files.length < 3) {
-      //   return res.status(400).json({ message: 'At least 3 photos are required.' });
-      // }
+      if (!req.files || req.files.length < 3) {
+        return res.status(400).json({ message: 'At least 3 photos are required.' });
+      }
 
-      // const photos = req.files.map((file) => file.path);
+      const photos = req.files.map((file) => file.path);
 
       if (!weekdayPrice || isNaN(weekdayPrice)) {
         return res.status(400).json({ message: 'Valid weekdayPrice is required.' });
@@ -51,7 +51,7 @@ export const listingController = {
         beds,
         bathrooms,
         amenities,
-        // photos,
+        photos,
         title,
         description,
         weekdayPrice: parseFloat(weekdayPrice),
