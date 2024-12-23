@@ -1,5 +1,5 @@
 import  {listingController} from '../../controller/listingController/index.js';
-import upload from '../../config/multer/index.js';
+import upload from '../../config/cloudnry/index.js';
 import  {authenticateHost } from '../../middleWare/index.js';
 
 const listingRoute = (app) => {

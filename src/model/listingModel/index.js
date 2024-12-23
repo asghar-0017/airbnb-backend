@@ -31,16 +31,26 @@ const listingSchema = new mongoose.Schema({
   beds: { type: Number, required: false },
   bathrooms: { type: Number, required: false },
   amenities: { type: [String], required: false },
-  photos: { type: [String],required: false },  
+  photos: {
+    type: [String],
+    validate: {
+      validator: function (value) {
+        return value && value.length >= 3;
+      },
+      message: 'At least 3 photos are required.',
+    },
+    required: true,
+  },
   title: { type: String, required: false },
   description: { type: String, required: false },
-  weekdayPrice: { type: Number, required: false },
-  weekendPrice: { type: Number, required: false },
+  weekdayPrice: { type: Number, required: true, default: 0 },
+  weekendPrice: { type: Number, required: true, default: 0 },
   commission: { type: Number, default: 13 },
   actualPrice: {
     type: Number,
     required: false,
     default: function () {
+      if (!this.weekdayPrice || !this.weekendPrice) return 0; // Prevent NaN
       return Math.round((this.weekdayPrice + this.weekendPrice) * (1 + this.commission / 100));
     },
   },
@@ -52,6 +62,6 @@ const listingSchema = new mongoose.Schema({
       totalPrice: { type: Number, required: false },
     },
   ],
-}, { timestamps: false });
+}, { timestamps: true }); // Use timestamps for better tracking
 
 export default mongoose.model('Listing', listingSchema);

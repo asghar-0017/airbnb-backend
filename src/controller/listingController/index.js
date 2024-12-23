@@ -2,6 +2,7 @@ import Listing from '../../model/listingModel/index.js';
 
 export const listingController = {
   createListing: async (req, res) => {
+    console.log("API hit");
     try {
       const {
         placeType,
@@ -18,12 +19,23 @@ export const listingController = {
         weekendPrice,
       } = req.body;
 
+      // Ensure photos are present
       if (!req.files || req.files.length < 3) {
         return res.status(400).json({ message: 'At least 3 photos are required.' });
       }
 
       const photos = req.files.map((file) => file.path);
 
+      // Validate weekdayPrice and weekendPrice
+      if (!weekdayPrice || isNaN(weekdayPrice)) {
+        return res.status(400).json({ message: 'Valid weekdayPrice is required.' });
+      }
+
+      if (!weekendPrice || isNaN(weekendPrice)) {
+        return res.status(400).json({ message: 'Valid weekendPrice is required.' });
+      }
+
+      // Create a new listing
       const newListing = new Listing({
         hostId: req.user._id,
         placeType,
@@ -37,13 +49,14 @@ export const listingController = {
         photos,
         title,
         description,
-        weekdayPrice,
-        weekendPrice,
+        weekdayPrice: parseFloat(weekdayPrice),
+        weekendPrice: parseFloat(weekendPrice),
       });
 
       await newListing.save();
       res.status(201).json({ message: 'Listing created successfully', listing: newListing });
     } catch (error) {
+      console.error('Error creating listing:', error);
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
