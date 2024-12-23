@@ -21,7 +21,7 @@ const authController = {
       res.status(201).json({ message: 'User created successfully',token,user });
     } catch (error) {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
-    }
+    };
   },
 
   login: async (req, res) => {
