@@ -4,17 +4,17 @@ const listingSchema = new mongoose.Schema({
   hostId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Host',
-    required: true,
+    required: false,
   },
   placeType: {
     type: String,
     enum: ['House', 'Apartment', 'Shared Room'],
-    required: true,
+    required: false,
   },
   roomType: {
     type: String,
     enum: ['Entire Place', 'A Room', 'A Shared Room'],
-    required: true,
+    required: false,
   },
   location: {
     street: { type: String, required: false },
@@ -23,36 +23,35 @@ const listingSchema = new mongoose.Schema({
     town: { type: String },
     postcode: { type: String, required: false },
     mapLocation: {
-      lat: { type: Number, required: true },
-      lng: { type: Number, required: true },
+      lat: { type: Number, required: false },
+      lng: { type: Number, required: false },
     },
   },
-  guestCapacity: { type: Number, required: true },
-  bedrooms: { type: Number, required: true },
-  beds: { type: Number, required: true },
-  bathrooms: { type: Number, required: true },
+  guestCapacity: { type: Number, required: false },
+  beds: { type: Number, required: false },
+  bathrooms: { type: Number, required: false },
   amenities: [String],
   photos: [String],
-  title: { type: String, required: true },
-  description: { type: String, required: true },
-  weekdayPrice: { type: Number, required: true },
-  weekendPrice: { type: Number, required: true },
+  title: { type: String, required: false },
+  description: { type: String, required: false },
+  weekdayPrice: { type: Number, required: false },
+  weekendPrice: { type: Number, required: false },
   commission: { type: Number, default: 13 },
   actualPrice: {
     type: Number,
-    required: true,
+    required: false,
     default: function () {
       return Math.round((this.weekdayPrice + this.weekendPrice) * (1 + this.commission / 100));
     },
   },
-  // bookings: [
-  //   {
-  //     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  //     startDate: { type: Date, required: true },
-  //     endDate: { type: Date, required: true },
-  //     totalPrice: { type: Number, required: true },
-  //   },
-  // ],
-}, { timestamps: true });
+  bookings: [
+    {
+      userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
+      startDate: { type: Date, required: false },
+      endDate: { type: Date, required: false },
+      totalPrice: { type: Number, required: false },
+    },
+  ],
+}, { timestamps: false });
 
 export default mongoose.model('Listing', listingSchema);
