@@ -33,6 +33,12 @@ const listingSchema = new mongoose.Schema({
   amenities: { type: [String], required: false },
   photos: {
     type: [String],
+    validate: {
+      validator: function (value) {
+        return value && value.length >= 3;
+      },
+      message: 'At least 3 photos are required.',
+    },
     required: true,
   },
   title: { type: String, required: false },
