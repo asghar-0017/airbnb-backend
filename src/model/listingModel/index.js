@@ -30,6 +30,7 @@ const listingSchema = new mongoose.Schema({
   guestCapacity: { type: Number, required: false },
   beds: { type: Number, required: false },
   bathrooms: { type: Number, required: false },
+  bedrooms:{type: Number, required: false },
   amenities: { type: [String], required: false },
   photos: {
     type: [String],
@@ -45,14 +46,23 @@ const listingSchema = new mongoose.Schema({
   description: { type: String, required: false },
   weekdayPrice: { type: Number, required: true, default: 0 },
   weekendPrice: { type: Number, required: true, default: 0 },
-  commission: { type: Number, default: 13 },
-  actualPrice: {
+  weekdayCommission: { type: Number, default: 13 }, 
+  weekendCommission: { type: Number, default: 13 }, 
+  weekdayActualPrice: {
     type: Number,
     required: false,
     default: function () {
-      if (!this.weekdayPrice || !this.weekendPrice) return 0; // Prevent NaN
-      return Math.round((this.weekdayPrice + this.weekendPrice) * (1 + this.commission / 100));
+      if (!this.weekdayPrice) return 0;
+      return Math.round(this.weekdayPrice * (1 + this.weekdayCommission / 100));
     },
+  },
+  weekendActualPrice: {
+    type: Number,
+    required: false,
+    default: function () {
+      if (!this.weekendPrice) return 0;
+      return Math.round(this.weekendPrice * (1 + this.weekendCommission / 100));
+    }
   },
   bookings: [
     {
