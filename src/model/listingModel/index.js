@@ -16,17 +16,15 @@ const listingSchema = new mongoose.Schema({
     enum: ['Entire Place', 'A Room', 'A Shared Room'],
     required: false,
   },
-  location: {
+ 
     street: { type: String, required: false },
     flat: { type: String },
     city: { type: String, required: false },
     town: { type: String },
     postcode: { type: String, required: false },
-    mapLocation: {
-      lat: { type: Number, required: false },
-      lng: { type: Number, required: false },
-    },
-  },
+    latitude: { type: Number, required: false },
+    longitude: { type: Number, required: false },
+
   guestCapacity: { type: Number, required: false },
   beds: { type: Number, required: false },
   bathrooms: { type: Number, required: false },

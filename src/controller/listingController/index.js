@@ -1,5 +1,6 @@
 import listingModel from '../../model/listingModel/index.js';
 import Listing from '../../model/listingModel/index.js';
+import Host from '../../model/hostModel/index.js'
 
 export const listingController = {
   createListing: async (req, res) => {
@@ -8,7 +9,6 @@ export const listingController = {
       const {
         placeType,
         roomType,
-        location,
         guestCapacity,
         bedrooms,
         beds,
@@ -18,6 +18,14 @@ export const listingController = {
         description,
         weekdayPrice,
         weekendPrice,
+        street,
+        flat,
+        city,
+        town,
+        postcode,
+        latitude,
+        longitude
+      
       } = req.body;
 
       // if (!req.files || req.files.length < 3) {
@@ -38,7 +46,6 @@ export const listingController = {
         hostId: req.user._id,
         placeType,
         roomType,
-        location,
         guestCapacity,
         bedrooms,
         beds,
@@ -49,6 +56,13 @@ export const listingController = {
         description,
         weekdayPrice: parseFloat(weekdayPrice),
         weekendPrice: parseFloat(weekendPrice),
+        street,
+        flat,
+        city,
+        town,
+        postcode,
+        latitude,
+        longitude
       });
 
       await newListing.save();
@@ -62,13 +76,20 @@ export const listingController = {
   getListingsByHostId: async (req, res) => {
     try {
       const hostId = req.params.hostId; 
-      const listing = await Listing.find({hostId}); 
+      const hostData = await Host.findById(hostId);
+      const listing = await Listing.find({hostId});
+      const data={
+        email:hostData.email,
+        userName:hostData.userName,
+        photoProfile: hostData.photoProfile
+      } 
+
 
       if (!listing) {
         return res.status(404).json({ message: 'Listing not found' });
       }
 
-      res.status(200).json({ message: 'Listing fetched successfully', listing });
+      res.status(200).json({ message: 'Listing fetched successfully', hostData:data,listing });
     } catch (error) {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
