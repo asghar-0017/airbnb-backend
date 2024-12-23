@@ -4,15 +4,12 @@ import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import multer from 'multer';
 
 dotenv.config();
-
-// Configure Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Create Cloudinary storage for Multer
 const storage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {
@@ -21,14 +18,13 @@ const storage = new CloudinaryStorage({
     }
     return {
       folder: 'listings',
-      format: 'jpg', // Force format conversion to 'jpg' if needed
-      allowed_formats: ['jpg', 'jpeg', 'png'], // Allowed formats
-      public_id: `${Date.now()}-${file.originalname.split('.')[0]}`, // Unique file name
+      format: 'jpg', 
+      allowed_formats: ['jpg', 'jpeg', 'png'], 
+      public_id: `${Date.now()}-${file.originalname.split('.')[0]}`, 
     };
   },
 });
 
-// Configure Multer with Cloudinary storage
 const upload = multer({
   storage,
   fileFilter: (req, file, cb) => {
@@ -38,7 +34,7 @@ const upload = multer({
       cb(null, true);
     }
   },
-  limits: { fileSize: 5 * 1024 * 1024 }, // Limit file size to 5MB
+  limits: { fileSize: 5 * 1024 * 1024 }, 
 });
 
 export default upload;

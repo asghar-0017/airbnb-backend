@@ -19,14 +19,12 @@ export const listingController = {
         weekendPrice,
       } = req.body;
 
-      // Ensure photos are present
-      if (!req.files || req.files.length < 3) {
+      if (!req.files) {
         return res.status(400).json({ message: 'At least 3 photos are required.' });
       }
 
       const photos = req.files.map((file) => file.path);
 
-      // Validate weekdayPrice and weekendPrice
       if (!weekdayPrice || isNaN(weekdayPrice)) {
         return res.status(400).json({ message: 'Valid weekdayPrice is required.' });
       }
@@ -35,7 +33,6 @@ export const listingController = {
         return res.status(400).json({ message: 'Valid weekendPrice is required.' });
       }
 
-      // Create a new listing
       const newListing = new Listing({
         hostId: req.user._id,
         placeType,
