@@ -35,7 +35,7 @@ export const bookingController = {
       );
   
       if (overlappingBooking) {
-        return res.status(400).json({
+        return res.status(200).json({
           message: 'Selected dates are already booked',
           conflictingDates: {
             startDate: overlappingBooking.startDate,
