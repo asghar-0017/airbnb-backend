@@ -4,10 +4,14 @@ export const bookingController = {
   bookListing: async (req, res) => {
     try {
       const { listingId } = req.params;
-      const { startDate, endDate } = req.body;
+      const { startDate, endDate,guestCapacity } = req.body;
   
-      if (!startDate || !endDate) {
-        return res.status(400).json({ message: 'Start and end dates are required' });
+      if (!startDate || !endDate || !guestCapacity) {
+        return res.status(400).json({ message: 'guestCapacity,Start and end dates are required' });
+      }
+      const listingData=await Listing.findById(listingId)
+      if(guestCapacity>listingData.guestCapacity){
+        return res.status(400).json({ message: `guest Capacity Should be ${listingData.guestCapacity}` });
       }
   
       const parsedStartDate = new Date(startDate);
@@ -80,44 +84,65 @@ export const bookingController = {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
+
+  getBookingsToday: async (req, res) => {
+    try {
+      const { hostId } = req.params; // Get hostId from route parameters
+      console.log("hostId", hostId);
   
-
-  // getBookings: async (req, res) => {
-  //   try {
-  //     const { listingId } = req.params;
-  //     const listing = await Listing.findById(listingId).select('bookings');
-  //     if (!listing) {
-  //       return res.status(404).json({ message: 'Listing not found' });
-  //     }
-  //     res.status(200).json({ bookings: listing.bookings });
-  //   } catch (error) {
-  //     res.status(500).json({ message: 'Internal Server Error', error: error.message });
-  //   }
-  // },
-
-
- getBookings: async (req, res) => {
-  try {
-    const { listingId } = req.params;
-
-    // Find the listing and populate user data for bookings
-    const listing = await Listing.findById(listingId)
-      .populate('bookings.userId', 'name email') // Populate user details (name and email)
-      .exec();
-
-    if (!listing) {
-      return res.status(404).json({ message: 'Listing not found' });
+      // Get today's start and end times in UTC
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0); // Start of today in UTC
+  
+      const tomorrow = new Date(today);
+      tomorrow.setUTCDate(today.getUTCDate() + 1); // Start of the next day in UTC
+  
+      // Find listings for the specific host
+      const listings = await Listing.find({ hostId });
+      console.log("listings", listings);
+  
+      if (!listings || listings.length === 0) {
+        return res.status(404).json({ message: 'No listings found for this hostId.' });
+      }
+  
+      // Initialize an array to hold today's bookings
+      const todayBookings = [];
+  
+      // Iterate through listings and filter bookings for today
+      listings.forEach((listing) => {
+        const listingTodayBookings = listing.bookings.filter(
+          (booking) => booking.bookingDate >= today && booking.bookingDate < tomorrow
+        );
+  
+        // Add bookings for this listing to the overall todayBookings array
+        if (listingTodayBookings.length > 0) {
+          todayBookings.push({
+            title: listing.title,
+            bookings: listingTodayBookings,
+          });
+        }
+      });
+  
+      // If no bookings for today
+      if (todayBookings.length === 0) {
+        return res.status(404).json({ message: 'No bookings for today.' });
+      }
+  
+      res.status(200).json({
+        message: 'Bookings for today',
+        data: todayBookings,
+      });
+    } catch (error) {
+      console.error("Error in getBookingsToday:", error.message);
+      res.status(500).json({
+        message: 'Internal Server Error',
+        error: error.message,
+      });
     }
-
-    res.status(200).json({
-      message: 'Listing and bookings retrieved successfully',
-      listing,
-    });
-  } catch (error) {
-    res.status(500).json({ message: 'Internal Server Error', error: error.message });
   }
-},
-
+  
+  
+   
   
 };
 

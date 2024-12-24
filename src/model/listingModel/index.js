@@ -16,15 +16,14 @@ const listingSchema = new mongoose.Schema({
     enum: ['Entire Place', 'A Room', 'A Shared Room'],
     required: false,
   },
- 
-    street: { type: String, required: false },
-    flat: { type: String },
-    city: { type: String, required: false },
-    town: { type: String },
-    postcode: { type: String, required: false },
-    latitude: { type: Number, required: false },
-    longitude: { type: Number, required: false },
-
+  street: { type: String, required: false },
+  flat: { type: String },
+  city: { type: String, required: false },
+  town: { type: String },
+  postcode: { type: String, required: false },
+  latitude: { type: Number, required: false },
+  longitude: { type: Number, required: false },
+  
   guestCapacity: { type: Number, required: false },
   beds: { type: Number, required: false },
   bathrooms: { type: Number, required: false },
@@ -68,6 +67,7 @@ const listingSchema = new mongoose.Schema({
       startDate: { type: Date, required: false },
       endDate: { type: Date, required: false },
       totalPrice: { type: Number, required: false },
+      bookingDate:{type:Date,default:Date.now()}
     },
   ],
 }, { timestamps: true }); // Use timestamps for better tracking

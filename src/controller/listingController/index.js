@@ -102,8 +102,15 @@ export const listingController = {
       if (!listing) {
         return res.status(404).json({ message: 'Listing not found' });
       }
+      const hostData=await Host.findById(listing.hostId)
+      const hostSelectdData={
+        userName:hostData.userName,
+        email:hostData.email,
+        photoProfile:hostData.photoProfile
+      }
+      console.log("listing",listing)
 
-      res.status(200).json({ message: 'Listing fetched successfully', listing });
+      res.status(200).json({ message: 'Listing fetched successfully',hostData:hostSelectdData, listing });
     } catch (error) {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
