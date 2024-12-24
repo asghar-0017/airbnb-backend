@@ -4,9 +4,9 @@ export const bookingController = {
   bookListing: async (req, res) => {
     try {
       const { listingId } = req.params;
-      const { startDate, endDate,guestCapacity } = req.body;
+      const { startDate, endDate } = req.body;
   
-      if (!startDate || !endDate || !guestCapacity) {
+      if (!startDate || !endDate ) {
         return res.status(400).json({ message: 'guestCapacity,Start and end dates are required' });
       }
       const listingData=await Listing.findById(listingId)
