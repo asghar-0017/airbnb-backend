@@ -5,7 +5,7 @@ import  {authenticateHost } from '../../middleWare/index.js';
 const listingRoute = (app) => {
     app.post('/listings',authenticateHost, upload.array('photos', 8), listingController.createListing);
     app.get('/listings/:hostId', authenticateHost,listingController.getListingsByHostId);
-    app.get('/listing/:id', authenticateHost,listingController.getListingById);
+    app.get('/listing/:id',listingController.getListingById);
     app.get('/all-listring',listingController.getAllListings)
 
 };
