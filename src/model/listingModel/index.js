@@ -61,15 +61,15 @@ const listingSchema = new mongoose.Schema({
       return Math.round(this.weekendPrice * (1 + this.weekendCommission / 100));
     }
   },
-  bookings: [
-    {
-      userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
-      startDate: { type: Date, required: false },
-      endDate: { type: Date, required: false },
-      totalPrice: { type: Number, required: false },
-      bookingDate:{type:Date,default:Date.now()}
-    },
-  ],
-}, { timestamps: true }); // Use timestamps for better tracking
+  // bookings: [
+  //   {
+  //     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
+  //     startDate: { type: Date, required: false },
+  //     endDate: { type: Date, required: false },
+  //     totalPrice: { type: Number, required: false },
+  //     bookingDate:{type:Date,default:Date.now()}
+  //   },
+  // ],
+}, { timestamps: true }); 
 
 export default mongoose.model('Listing', listingSchema);
