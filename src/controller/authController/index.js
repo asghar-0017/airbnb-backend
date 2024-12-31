@@ -44,6 +44,21 @@ const authController = {
     }
   },
 
+  updateProfile: async (req, res) => {
+    try {
+      const { hostId } = req.params;
+            const dataUpdate = req.body;
+        const host = await authUser.findById(hostId);
+      if (!host) {
+        return res.status(404).json({ message: "Host Not Found" });
+      }
+        const updatedData = await authUser.findByIdAndUpdate(hostId, dataUpdate, { new: true });
+      return res.status(200).send({ message: "Success", updatedData });
+    } catch (error) {
+      return res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    }
+  },
+  
   verifyToken: async (req, res) => {
     try {
       const token = req.headers['authorization']?.split(' ')[1];
