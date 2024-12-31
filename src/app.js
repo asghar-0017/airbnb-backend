@@ -5,7 +5,7 @@ import passport from 'passport';
 import ConnectDB from './dbConnector/index.js';
 import config from './config/index.js';
 import allRoutes from './routes/allRoutes/index.js';
-import session from 'express-session';
+import session from 'express-session'
 
 
 dotenv.config();
