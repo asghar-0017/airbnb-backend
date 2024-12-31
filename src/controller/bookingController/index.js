@@ -129,36 +129,51 @@ confirmBooking: async (req, res) => {
 },
 
 
- getTemporaryBookings :async (req, res) => {
-    try {
-      const listings = await Listing.find({ hostId: req.user._id }).select('_id');
 
-      if (listings.length === 0) {
-        return res.status(404).json({ message: 'No listings found for this host.' });
-      }
-      const listingIds = listings.map((listing) => listing._id);
-      const bookings = await TemporaryBooking.find({ listingId: { $in: listingIds } })
-        .populate('listingId')
-        .exec();  
+getTemporaryBookings: async (req, res) => {
+  try {
+    const listings = await Listing.find({ hostId: req.user._id }).select('_id');
+    console.log("Listings found:", listings);
 
-      if (bookings.length === 0) {
-        return res.status(200).json({ message: 'No temporary bookings found for this host.' });
-      }
-      console.log("userId",bookings[0].userId);
-
-      const userData= await Host.findById(bookings[0].userId)
-      const userSpecificData={
-        name:userData.userName,
-        email:userData.email,
-        photoProfile:userData.photoProfile
-      }
-      console.log("userSpecificData",userSpecificData)
-      return res.status(200).json({ userData:userSpecificData,bookings });
-    } catch (error) {
-      console.error('Error fetching temporary bookings:', error);
-      return res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    if (listings.length === 0) {
+      return res.status(404).json({ message: 'No listings found for this host.' });
     }
-  },
+    const listingIds = listings.map((listing) => listing._id);
+    const bookings = await TemporaryBooking.find({ listingId: { $in: listingIds } })
+      .populate('listingId')
+      .exec();
+
+    console.log("Bookings found:", bookings);
+
+    if (bookings.length === 0) {
+      return res.status(200).json({ message: 'No temporary bookings found for this host.' });
+    }
+    const bookingsWithUserData = await Promise.all(
+      bookings.map(async (booking) => {
+        const userData = await Host.findById(booking.userId);
+
+        return {
+          ...booking.toObject(),
+          userSpecificData: userData
+            ? {
+                name: userData.userName,
+                email: userData.email,
+                photoProfile: userData.photoProfile,
+              }
+            : null,
+        };
+      })
+    );
+
+    return res.status(200).json({ bookings: bookingsWithUserData });
+  } catch (error) {
+    console.error('Error fetching temporary bookings:', error);
+    return res.status(500).json({ message: 'Internal Server Error', error: error.message });
+  }
+},
+
+
+
 
   getConfirmedBookings: async (req, res) => {
     try {

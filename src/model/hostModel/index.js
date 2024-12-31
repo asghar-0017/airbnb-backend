@@ -10,6 +10,10 @@ const hostSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  phoneNumber:{
+    type:Number,
+    require:false
+  },
   password: {
     type: String,
     required: true,
