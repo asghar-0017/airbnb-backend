@@ -94,28 +94,50 @@ export const listingController = {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
+
   getListingById: async (req, res) => {
     try {
-      const id = req.params.id; 
-      const listing = await Listing.findById(id); 
-
+      const id = req.params.id;
+    
+      // Fetch the listing by ID and populate the confirmedBookings field
+      const listing = await Listing.findById(id).populate('confirmedBookings');
+    
       if (!listing) {
         return res.status(404).json({ message: 'Listing not found' });
       }
-      const hostData=await Host.findById(listing.hostId)
-      const hostSelectdData={
-        userName:hostData.userName,
-        email:hostData.email,
-        photoProfile:hostData.photoProfile
-      }
-      console.log("listing",listing)
-
-      res.status(200).json({ message: 'Listing fetched successfully',hostData:hostSelectdData, listing });
+    
+      // Fetch the host details
+      const hostData = await Host.findById(listing.hostId);
+    
+      // Select specific host data fields
+      const hostSelectedData = {
+        userName: hostData?.userName,
+        email: hostData?.email,
+        photoProfile: hostData?.photoProfile,
+      };
+    
+      // Send the response with populated confirmedBookings
+      res.status(200).json({
+        message: 'Listing fetched successfully',
+        hostData: hostSelectedData,
+        listing: {
+          ...listing.toObject(),
+          bookings: listing.confirmedBookings.map(booking => ({
+            userId: booking.userId,
+            startDate: booking.startDate,
+            endDate: booking.endDate,
+            totalPrice: booking.totalPrice,
+            bookingDate: booking.createdAt, // Use createdAt or bookingDate depending on your schema
+          })),
+        },
+      });
     } catch (error) {
+      console.error('Error fetching listing:', error);
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
-
+  
+  
   getAllListings:async(req,res)=>{
     try{
       const data=await Listing.find()

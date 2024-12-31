@@ -70,6 +70,16 @@ const listingSchema = new mongoose.Schema({
   //     bookingDate:{type:Date,default:Date.now()}
   //   },
   // ],
-}, { timestamps: true }); 
+}, { timestamps: true,
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }, 
+
+}); 
+
+listingSchema.virtual('confirmedBookings', {
+  ref: 'ConfirmedBooking',
+  localField: '_id',
+  foreignField: 'listingId',
+});
 
 export default mongoose.model('Listing', listingSchema);

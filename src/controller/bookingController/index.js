@@ -5,6 +5,7 @@ import sendConfirmationEmail from '../../config/confirmEmail/index.js';
 import Payment from '../../model/payment/index.js';  
 import Stripe from 'stripe'; // Import the Stripe module
 const stripeClient= Stripe(process.env.STRIPE_KEY); 
+import Host from '../../model/hostModel/index.js'
 
 export const bookingController = {
 
@@ -131,6 +132,7 @@ confirmBooking: async (req, res) => {
  getTemporaryBookings :async (req, res) => {
     try {
       const listings = await Listing.find({ hostId: req.user._id }).select('_id');
+
       if (listings.length === 0) {
         return res.status(404).json({ message: 'No listings found for this host.' });
       }
@@ -138,11 +140,20 @@ confirmBooking: async (req, res) => {
       const bookings = await TemporaryBooking.find({ listingId: { $in: listingIds } })
         .populate('listingId')
         .exec();  
-  
+
       if (bookings.length === 0) {
         return res.status(200).json({ message: 'No temporary bookings found for this host.' });
       }
-      return res.status(200).json({ bookings });
+      console.log("userId",bookings[0].userId);
+
+      const userData= await Host.findById(bookings[0].userId)
+      const userSpecificData={
+        name:userData.userName,
+        email:userData.email,
+        photoProfile:userData.photoProfile
+      }
+      console.log("userSpecificData",userSpecificData)
+      return res.status(200).json({ userData:userSpecificData,bookings });
     } catch (error) {
       console.error('Error fetching temporary bookings:', error);
       return res.status(500).json({ message: 'Internal Server Error', error: error.message });
