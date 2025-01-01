@@ -50,7 +50,7 @@ const authController = {
       const dataUpdate = { ...req.body };
   
       if (req.file) {
-        dataUpdate.profileImage = req.file.path; 
+        dataUpdate.photoProfile = req.file.path; 
       }
   
       const host = await authUser.findById(hostId);

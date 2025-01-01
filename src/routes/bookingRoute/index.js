@@ -7,6 +7,8 @@ const bookingRoute = (app) => {
 
     app.get('/temporary-booking', authenticateHost, bookingController.getTemporaryBookings);
     app.get('/get-confirmed-booking', authenticateHost, bookingController.getConfirmedBookings);
+    app.get('/bookings-summary', authenticateHost, bookingController.getBookingSummary);
+    app.put('/update-booking-status/:bookingId', authenticateHost, bookingController.updateBookingStatus);
 
 
     app.get('/bookings-today/:hostId', authenticateHost, bookingController.getBookingsToday);

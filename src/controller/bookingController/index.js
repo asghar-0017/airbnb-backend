@@ -6,6 +6,7 @@ import Payment from '../../model/payment/index.js';
 import Stripe from 'stripe'; // Import the Stripe module
 const stripeClient= Stripe(process.env.STRIPE_KEY); 
 import Host from '../../model/hostModel/index.js'
+import Booking from '../../model/confirmBooking/index.js'
 
 export const bookingController = {
 
@@ -81,20 +82,16 @@ confirmBooking: async (req, res) => {
       return res.status(404).json({ message: 'Booking not found.' });
     }
     const { listingId, startDate, endDate, userId, paymentIntentId } = temporaryBooking;
-
     const existingConfirmedBooking = await ConfirmedBooking.findOne({
       listingId,
       $or: [
         { startDate: { $lte: new Date(endDate) }, endDate: { $gte: new Date(startDate) } },
       ],
     });
-
     if (existingConfirmedBooking) {
       return res.status(400).json({ message: 'Dates already confirmed for another booking.' });
     }
-
     const paymentIntent = await stripeClient.paymentIntents.retrieve(paymentIntentId);
-    console.log("paymentIntent", paymentIntent);
 
     if (paymentIntent.status === 'requires_confirmation') {
       const confirmedPaymentIntent = await stripeClient.paymentIntents.confirm(paymentIntentId, {
@@ -133,8 +130,6 @@ confirmBooking: async (req, res) => {
 getTemporaryBookings: async (req, res) => {
   try {
     const listings = await Listing.find({ hostId: req.user._id }).select('_id');
-    console.log("Listings found:", listings);
-
     if (listings.length === 0) {
       return res.status(404).json({ message: 'No listings found for this host.' });
     }
@@ -142,8 +137,6 @@ getTemporaryBookings: async (req, res) => {
     const bookings = await TemporaryBooking.find({ listingId: { $in: listingIds } })
       .populate('listingId')
       .exec();
-
-    console.log("Bookings found:", bookings);
 
     if (bookings.length === 0) {
       return res.status(200).json({ message: 'No temporary bookings found for this host.' });
@@ -172,7 +165,76 @@ getTemporaryBookings: async (req, res) => {
   }
 },
 
+ getBookingSummary: async (req, res) => {
+  try {
+    const listings = await Listing.find({ hostId: req.user._id }).select('_id');
+    if (listings.length === 0) {
+      return res.status(404).json({ message: 'No listings found for this host.' });
+    }
 
+    const listingIds = listings.map((listing) => listing._id);
+    const allBookings = await Booking.find({ listingId: { $in: listingIds } })
+      .populate('listingId')
+      .lean();
+
+    const pendingBookings = allBookings.filter((booking) => booking.status === 'pending');
+    const completedBookings = allBookings.filter((booking) => booking.status === 'completed');
+    const canceledBookings = allBookings.filter((booking) => booking.status === 'canceled');
+
+    res.status(200).json({
+      summary: {
+        all: {
+          count: allBookings.length,
+          data: allBookings,
+        },
+        pending: {
+          count: pendingBookings.length,
+          data: pendingBookings,
+        },
+        completed: {
+          count: completedBookings.length,
+          data: completedBookings,
+        },
+        canceled: {
+          count: canceledBookings.length,
+          data: canceledBookings,
+        },
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching booking summary:', error);
+    res.status(500).json({ message: 'Internal Server Error', error: error.message });
+  }
+},
+
+
+updateBookingStatus: async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { status } = req.body;
+    const validStatuses = ['pending', 'completed', 'canceled'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        message: `Invalid status. Allowed statuses are: ${validStatuses.join(', ')}`,
+      });
+    }
+    const updatedBooking = await Booking.findByIdAndUpdate(
+      bookingId,
+      { status },
+      { new: true, runValidators: true } 
+    );
+    if (!updatedBooking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+    res.status(200).json({
+      message: 'Booking status updated successfully',
+      booking: updatedBooking,
+    });
+  } catch (error) {
+    console.error('Error updating booking status:', error);
+    res.status(500).json({ message: 'Internal Server Error', error: error.message });
+  }
+},
 
 
   getConfirmedBookings: async (req, res) => {
@@ -180,14 +242,14 @@ getTemporaryBookings: async (req, res) => {
       console.log("req user",req.user)
       const listings = await Listing.find({ hostId: req.user._id })
       const listingIds = listings.map((listing) => listing._id);
-
       const bookings = await ConfirmedBooking.find({ listingId: { $in: listingIds } }).populate('listingId');
-
       res.status(200).json({ bookings });
     } catch (error) {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
+
+
 
   getBookingsToday: async (req, res) => {
     try {
