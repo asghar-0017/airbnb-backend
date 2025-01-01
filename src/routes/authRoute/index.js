@@ -1,11 +1,12 @@
 import authController from '../../controller/authController/index.js';
 import passport from 'passport';
 import  {authenticateHost } from '../../middleWare/index.js';
+import upload from '../../config/cloudnry/index.js';
 
 const authRoute = (app) => {
   app.post('/signUp', authController.signUp);
   app.post('/login', authController.login);
-  app.put('/update-profile/:hostId', authenticateHost, authController.updateProfile);
+  app.put('/update-profile/:hostId', authenticateHost, upload.single('image'), authController.updateProfile);
 
   app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
