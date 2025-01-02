@@ -7,6 +7,9 @@ const bookingRoute = (app) => {
     app.get('/temporary-booking', authenticateHost, bookingController.getTemporaryBookings);
     app.get('/get-confirmed-booking', authenticateHost, bookingController.getConfirmedBookings);
 
-    
+    app.get('/bookings-checking-out-today', authenticateHost, bookingController.getBookingsCheckingOutToday);
+    app.get('/currently-hosting', authenticateHost, bookingController.getCurrentlyHostingBookings);
+    app.get('/upcoming-bookings', authenticateHost, bookingController.getUpcomingBookings);
+
 }
 export default bookingRoute;
