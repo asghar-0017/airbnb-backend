@@ -223,6 +223,8 @@ getTemporaryBookings: async (req, res) => {
                             name: userData.userName,
                             email: userData.email,
                             photoProfile: userData.photoProfile,
+                            phoneNumber:userData.phoneNumber
+
                         }
                         : null,
                 };
@@ -238,9 +240,19 @@ getTemporaryBookings: async (req, res) => {
 
 getCurrentlyHostingBookings: async (req, res) => {
   try {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0); 
-      const listings = await Listing.find({ hostId: req.user._id }).select('_id');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); 
+    const hostId=req.user._id
+    const listings = await Listing.find({hostId }).select('_id');
+
+    const hostData=await Host.findById(hostId)
+    const hostSpecificData={
+      name:hostData.userName,
+      email:hostData.email,
+      photoProfile:hostData.photoProfile,
+      phoneNumber:hostData.phoneNumber
+
+    }
       const listingIds = listings.map((listing) => listing._id);
       if (listingIds.length === 0) {
           return res.status(200).json({ message: "No listings found for this host.", currentlyHostingBookings: [] });
@@ -250,7 +262,7 @@ getCurrentlyHostingBookings: async (req, res) => {
           startDate: { $lte: today },
           endDate: { $gte: today },
       }).populate('listingId');
-      res.status(200).json({ currentlyHostingBookings });
+      res.status(200).json({...currentlyHostingBookings,userSpecificData:hostSpecificData });
   } catch (error) {
       console.error('Error fetching currently hosting bookings:', error);
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
@@ -260,15 +272,25 @@ getCurrentlyHostingBookings: async (req, res) => {
 getUpcomingBookings: async (req, res) => {
     try {
         const today = new Date();
-        const listings = await Listing.find({ hostId: req.user._id }).select('_id');
+        const hostId=req.user._id
+        const listings = await Listing.find({ hostId }).select('_id');
         const listingIds = listings.map((listing) => listing._id);
+        const hostData= await Host.findById(hostId)
+
+        const hostSpecificData={
+          name:hostData.userName,
+          email:hostData.email,
+          photoProfile:hostData.photoProfile,
+          phoneNumber:hostData.phoneNumber
+    
+        }
 
         const upcomingBookings = await ConfirmedBooking.find({
             listingId: { $in: listingIds },
             startDate: { $gt: today },
         }).populate('listingId');
 
-        res.status(200).json({ upcomingBookings });
+        res.status(200).json({...upcomingBookings,hostSpecificData });
     } catch (error) {
         console.error('Error fetching upcoming bookings:', error);
         res.status(500).json({ message: 'Internal Server Error', error: error.message });
