@@ -195,20 +195,34 @@ getTemporaryBookings: async (req, res) => {
     }
   },
 
-  
-
-getBookingsCheckingOutToday: async (req, res) => {
+  getBookingsCheckingOutToday: async (req, res) => {
     try {
+        // Set the start of the current day in UTC
         const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        today.setUTCHours(0, 0, 0, 0); // Ensure UTC alignment
+        console.log("Today (start of UTC day):", today);
+
+        // Find listings belonging to the current host
         const listings = await Listing.find({ hostId: req.user._id }).select('_id');
+        console.log("Listings found:", listings);
+
         const listingIds = listings.map((listing) => listing._id);
 
+        // Handle case where no listings exist for the host
+        if (listingIds.length === 0) {
+            return res.status(200).json({ message: "No listings found for this host.", bookingsCheckingOutToday: [] });
+        }
+
+        // Query for bookings checking out today
         const bookingsCheckingOutToday = await ConfirmedBooking.find({
             listingId: { $in: listingIds },
-            endDate: today,
+            endDate: today, // Match exactly with today's UTC start
         }).populate('listingId');
 
+        console.log("Query executed with:", { listingIds, endDate: today });
+        console.log("Bookings checking out today:", bookingsCheckingOutToday);
+
+        // Send response
         res.status(200).json({ bookingsCheckingOutToday });
     } catch (error) {
         console.error('Error fetching bookings checking out today:', error);
@@ -219,31 +233,23 @@ getBookingsCheckingOutToday: async (req, res) => {
 getCurrentlyHostingBookings: async (req, res) => {
   try {
       const today = new Date();
-      today.setHours(0, 0, 0, 0); // Ensure date-only comparison
-      console.log("Today (start of day):", today);
-
+      today.setHours(0, 0, 0, 0); 
       const listings = await Listing.find({ hostId: req.user._id }).select('_id');
-      console.log("Listings:", listings);
       const listingIds = listings.map((listing) => listing._id);
-      console.log("Listing IDs:", listingIds);
-
       if (listingIds.length === 0) {
           return res.status(200).json({ message: "No listings found for this host.", currentlyHostingBookings: [] });
       }
-
       const currentlyHostingBookings = await ConfirmedBooking.find({
           listingId: { $in: listingIds },
           startDate: { $lte: today },
           endDate: { $gte: today },
       }).populate('listingId');
-
       res.status(200).json({ currentlyHostingBookings });
   } catch (error) {
       console.error('Error fetching currently hosting bookings:', error);
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
   }
 },
-
 
 getUpcomingBookings: async (req, res) => {
     try {
