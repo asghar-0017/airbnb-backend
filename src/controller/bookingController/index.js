@@ -189,6 +189,9 @@ getTemporaryBookings: async (req, res) => {
       const listings = await Listing.find({ hostId: req.user._id })
       const listingIds = listings.map((listing) => listing._id);
       const bookings = await ConfirmedBooking.find({ listingId: { $in: listingIds } }).populate('listingId');
+    
+
+    
       res.status(200).json({ bookings });
     } catch (error) {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
@@ -197,33 +200,36 @@ getTemporaryBookings: async (req, res) => {
 
   getBookingsCheckingOutToday: async (req, res) => {
     try {
-        // Set the start of the current day in UTC
         const today = new Date();
-        today.setUTCHours(0, 0, 0, 0); // Ensure UTC alignment
-        console.log("Today (start of UTC day):", today);
-
-        // Find listings belonging to the current host
+        today.setUTCHours(0, 0, 0, 0);
         const listings = await Listing.find({ hostId: req.user._id }).select('_id');
-        console.log("Listings found:", listings);
-
         const listingIds = listings.map((listing) => listing._id);
-
-        // Handle case where no listings exist for the host
         if (listingIds.length === 0) {
             return res.status(200).json({ message: "No listings found for this host.", bookingsCheckingOutToday: [] });
         }
-
-        // Query for bookings checking out today
-        const bookingsCheckingOutToday = await ConfirmedBooking.find({
+        const bookings = await ConfirmedBooking.find({
             listingId: { $in: listingIds },
-            endDate: today, // Match exactly with today's UTC start
+            endDate: today, 
         }).populate('listingId');
 
-        console.log("Query executed with:", { listingIds, endDate: today });
-        console.log("Bookings checking out today:", bookingsCheckingOutToday);
+        const bookingsWithUserData = await Promise.all(
+            bookings.map(async (booking) => {
+                const userData = await Host.findById(booking.userId); 
 
-        // Send response
-        res.status(200).json({ bookingsCheckingOutToday });
+                return {
+                    ...booking.toObject(),
+                    userSpecificData: userData
+                        ? {
+                            name: userData.userName,
+                            email: userData.email,
+                            photoProfile: userData.photoProfile,
+                        }
+                        : null,
+                };
+            })
+        );
+
+        return res.status(200).json({ count: bookings.length, bookingsCheckingOutToday: bookingsWithUserData });
     } catch (error) {
         console.error('Error fetching bookings checking out today:', error);
         res.status(500).json({ message: 'Internal Server Error', error: error.message });
