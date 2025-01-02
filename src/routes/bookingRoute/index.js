@@ -13,6 +13,5 @@ const bookingRoute = (app) => {
 
     app.get('/bookings-today/:hostId', authenticateHost, bookingController.getBookingsToday);
 
-};
-
+}
 export default bookingRoute;
