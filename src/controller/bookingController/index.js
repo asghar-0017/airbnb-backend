@@ -72,7 +72,6 @@ createBooking: async (req, res) => {
   }
 },
 
-
 confirmBooking: async (req, res) => {
   try {
     const { bookingId } = req.params;
@@ -165,76 +164,6 @@ getTemporaryBookings: async (req, res) => {
   }
 },
 
- getBookingSummary: async (req, res) => {
-  try {
-    const listings = await Listing.find({ hostId: req.user._id }).select('_id');
-    if (listings.length === 0) {
-      return res.status(404).json({ message: 'No listings found for this host.' });
-    }
-
-    const listingIds = listings.map((listing) => listing._id);
-    const allBookings = await Booking.find({ listingId: { $in: listingIds } })
-      .populate('listingId')
-      .lean();
-
-    const pendingBookings = allBookings.filter((booking) => booking.status === 'pending');
-    const completedBookings = allBookings.filter((booking) => booking.status === 'completed');
-    const canceledBookings = allBookings.filter((booking) => booking.status === 'canceled');
-
-    res.status(200).json({
-      summary: {
-        all: {
-          count: allBookings.length,
-          data: allBookings,
-        },
-        pending: {
-          count: pendingBookings.length,
-          data: pendingBookings,
-        },
-        completed: {
-          count: completedBookings.length,
-          data: completedBookings,
-        },
-        canceled: {
-          count: canceledBookings.length,
-          data: canceledBookings,
-        },
-      },
-    });
-  } catch (error) {
-    console.error('Error fetching booking summary:', error);
-    res.status(500).json({ message: 'Internal Server Error', error: error.message });
-  }
-},
-
-
-updateBookingStatus: async (req, res) => {
-  try {
-    const { bookingId } = req.params;
-    const { status } = req.body;
-    const validStatuses = ['pending', 'completed', 'canceled'];
-    if (!validStatuses.includes(status)) {
-      return res.status(400).json({
-        message: `Invalid status. Allowed statuses are: ${validStatuses.join(', ')}`,
-      });
-    }
-    const updatedBooking = await Booking.findByIdAndUpdate(
-      bookingId,
-      { status },
-      { new: true, runValidators: true } 
-    );
-    if (!updatedBooking) {
-      return res.status(404).json({ message: 'Booking not found' });
-    }
-    res.status(200).json({
-      message: 'Booking status updated successfully',
-      booking: updatedBooking,
-    });
-  } catch (error) {
-    console.error('Error updating booking status:', error);
-    res.status(500).json({ message: 'Internal Server Error', error: error.message });
-  }
-},
 
 
   getConfirmedBookings: async (req, res) => {
@@ -249,57 +178,63 @@ updateBookingStatus: async (req, res) => {
     }
   },
 
+  
 
-
-  getBookingsToday: async (req, res) => {
+getBookingsCheckingOutToday: async (req, res) => {
     try {
-      const { hostId } = req.params; 
-      console.log("hostId", hostId);
-  
-      const today = new Date();
-      today.setUTCHours(0, 0, 0, 0); 
-  
-      const tomorrow = new Date(today);
-      tomorrow.setUTCDate(today.getUTCDate() + 1); 
-  
-      const listings = await Listing.find({ hostId });
-      console.log("listings", listings);
-  
-      if (!listings || listings.length === 0) {
-        return res.status(404).json({ message: 'No listings found for this hostId.' });
-      }
-        const todayBookings = [];
-  
-      listings.forEach((listing) => {
-        const listingTodayBookings = listing.bookings.filter(
-          (booking) => booking.bookingDate >= today && booking.bookingDate < tomorrow
-        );
-  
-        if (listingTodayBookings.length > 0) {
-          todayBookings.push({
-            title: listing.title,
-            bookings: listingTodayBookings,
-          });
-        }
-      });
-  
-      if (todayBookings.length === 0) {
-        return res.status(404).json({ message: 'No bookings for today.' });
-      }
-  
-      res.status(200).json({
-        message: 'Bookings for today',
-        data: todayBookings,
-      });
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const listings = await Listing.find({ hostId: req.user._id }).select('_id');
+        const listingIds = listings.map((listing) => listing._id);
+
+        const bookingsCheckingOutToday = await ConfirmedBooking.find({
+            listingId: { $in: listingIds },
+            endDate: today,
+        }).populate('listingId');
+
+        res.status(200).json({ bookingsCheckingOutToday });
     } catch (error) {
-      console.error("Error in getBookingsToday:", error.message);
-      res.status(500).json({
-        message: 'Internal Server Error',
-        error: error.message,
-      });
+        console.error('Error fetching bookings checking out today:', error);
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
-  }
-  
+},
+
+getCurrentlyHostingBookings: async (req, res) => {
+    try {
+        const today = new Date();
+        const listings = await Listing.find({ hostId: req.user._id }).select('_id');
+        const listingIds = listings.map((listing) => listing._id);
+
+        const currentlyHostingBookings = await ConfirmedBooking.find({
+            listingId: { $in: listingIds },
+            startDate: { $lte: today },
+            endDate: { $gte: today },
+        }).populate('listingId');
+
+        res.status(200).json({ currentlyHostingBookings });
+    } catch (error) {
+        console.error('Error fetching currently hosting bookings:', error);
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    }
+},
+
+getUpcomingBookings: async (req, res) => {
+    try {
+        const today = new Date();
+        const listings = await Listing.find({ hostId: req.user._id }).select('_id');
+        const listingIds = listings.map((listing) => listing._id);
+
+        const upcomingBookings = await ConfirmedBooking.find({
+            listingId: { $in: listingIds },
+            startDate: { $gt: today },
+        }).populate('listingId');
+
+        res.status(200).json({ upcomingBookings });
+    } catch (error) {
+        console.error('Error fetching upcoming bookings:', error);
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    }
+},
   
    
   

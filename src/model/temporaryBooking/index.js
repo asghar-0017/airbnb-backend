@@ -7,7 +7,7 @@ const temporaryBookingSchema = new mongoose.Schema({
   endDate: { type: Date, required: true },
   guestCapacity: { type: Number, required: true },
   totalPrice: { type: Number, required: true },
-  paymentIntentId: { type: String, required: true }, // Added to store Stripe PaymentIntent ID
+  paymentIntentId: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
 });
 
