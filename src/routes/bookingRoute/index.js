@@ -4,6 +4,7 @@ import  {authenticateHost } from '../../middleWare/index.js';
 const bookingRoute = (app) => {
     app.post('/create-bookings/:listingId/',authenticateHost, bookingController.createBooking);
     app.post('/confirm-booking/:bookingId', authenticateHost, bookingController.confirmBooking);
+    app.delete('/reject-booking/:bookingId', authenticateHost, bookingController.deleteBooking);
     app.get('/temporary-booking', authenticateHost, bookingController.getTemporaryBookings);
     app.get('/get-confirmed-booking', authenticateHost, bookingController.getConfirmedBookings);
 

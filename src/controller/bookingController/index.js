@@ -124,6 +124,23 @@ confirmBooking: async (req, res) => {
   }
 },
 
+deleteBooking: async (req, res) => {
+  try {
+    const { bookingId } = req.params; 
+    
+    const deletedBooking = await TemporaryBooking.findByIdAndDelete(bookingId);
+
+    if (deletedBooking) {
+      return res.status(200).json({ message: 'Booking rejected', deletedBooking });
+    } else {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+  } catch (error) {
+    console.error('Error deleting booking:', error); 
+    return res.status(500).json({ message: 'Internal server error', error: error.message });
+  }
+},
+
 
 
 getTemporaryBookings: async (req, res) => {
@@ -157,7 +174,7 @@ getTemporaryBookings: async (req, res) => {
       })
     );
 
-    return res.status(200).json({ bookings: bookingsWithUserData });
+    return res.status(200).json({count:bookings.length, bookings: bookingsWithUserData });
   } catch (error) {
     console.error('Error fetching temporary bookings:', error);
     return res.status(500).json({ message: 'Internal Server Error', error: error.message });
