@@ -140,21 +140,17 @@ export const listingController = {
   
   getAllListings: async (req, res) => {
     try {
-      const loggedInUserId = req.query.userId; // Get userId from query parameters
+      const loggedInUserId = req.query.userId; 
       let listings;
   
       if (loggedInUserId) {
-        // If userId is provided, exclude listings by the logged-in user
         listings = await Listing.find({ hostId: { $ne: loggedInUserId } });
       } else {
-        // Otherwise, fetch all listings
         listings = await Listing.find();
       }
-  
       if (!listings.length) {
         return res.status(404).json({ message: 'No listings found.' });
       }
-  
       res.status(200).json({ message: 'Listings fetched successfully.', listings });
     } catch (error) {
       console.error('Error fetching listings:', error);
@@ -162,7 +158,7 @@ export const listingController = {
     }
   },
   
-  
+
   updateListing: async (req, res) => {
     try {
       const listingId = req.params.id;

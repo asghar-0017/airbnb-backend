@@ -327,25 +327,60 @@ getUpcomingBookings: async (req, res) => {
 
 
 
-
 getUserBookings: async (req, res) => {
   try {
-    const userId = req.user._id; 
+    const userId = req.user._id;
+
     const [temporaryBookings, confirmedBookings] = await Promise.all([
-      TemporaryBooking.find({ userId }).populate('listingId').exec(),
-      ConfirmedBooking.find({ userId }).populate('listingId').exec(),
+      TemporaryBooking.find({ userId })
+        .populate({
+          path: 'listingId',
+          populate: { path: 'hostId', select: 'userName email photoProfile' },
+        })
+        .exec(),
+      ConfirmedBooking.find({ userId })
+        .populate({
+          path: 'listingId',
+          populate: { path: 'hostId', select: 'userName email photoProfile' },
+        })
+        .exec(),
     ]);
+
     const allBookings = [...temporaryBookings, ...confirmedBookings];
+
     if (allBookings.length === 0) {
       return res.status(200).json({ message: 'No bookings found for this user.', userBookings: [] });
     }
+
     const bookingsWithDetails = allBookings.map((booking) => {
       const bookingData = booking.toObject();
       const status = booking instanceof TemporaryBooking ? 'Pending' : 'Confirmed';
 
+      const hostData = bookingData.listingId?.hostId;
+      const { hostId, ...listingDetails } = bookingData.listingId || {};
+
       return {
-        ...bookingData,
+        _id: bookingData._id,
+        userId: bookingData.userId,
+        listingId: {
+          ...listingDetails,
+          id: listingDetails._id,
+        },
+        startDate: bookingData.startDate,
+        endDate: bookingData.endDate,
+        guestCapacity: bookingData.guestCapacity,
+        totalPrice: bookingData.totalPrice,
+        paymentIntentId: bookingData.paymentIntentId,
+        createdAt: bookingData.createdAt,
+        __v: bookingData.__v,
         status,
+        hostData: hostData
+          ? {
+              userName: hostData.userName,
+              email: hostData.email,
+              photoProfile: hostData.photoProfile,
+            }
+          : null, 
       };
     });
 
@@ -355,6 +390,10 @@ getUserBookings: async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error', error: error.message });
   }
 },
+
+
+
+
   
    
   
