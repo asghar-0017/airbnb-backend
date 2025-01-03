@@ -144,19 +144,33 @@ export const listingController = {
       let listings;
   
       if (loggedInUserId) {
-        listings = await Listing.find({ hostId: { $ne: loggedInUserId } });
+        listings = await Listing.find({ hostId: { $ne: loggedInUserId } })
+          .populate('hostId', 'userName email photoProfile'); // Populate specific host fields
       } else {
-        listings = await Listing.find();
+        listings = await Listing.find()
+          .populate('hostId', 'userName email photoProfile'); // Populate specific host fields
       }
+  
       if (!listings.length) {
         return res.status(404).json({ message: 'No listings found.' });
       }
-      res.status(200).json({ message: 'Listings fetched successfully.', listings });
+  
+      // Transform hostId into hostData
+      const transformedListings = listings.map(listing => {
+        const host = listing.hostId; // Populated host data
+        const listingObject = listing.toObject(); // Convert Mongoose document to plain JS object
+        listingObject.hostData = host;
+        delete listingObject.hostId; // Remove hostId field
+        return listingObject;
+      });
+  
+      res.status(200).json({ message: 'Listings fetched successfully.', listings: transformedListings });
     } catch (error) {
       console.error('Error fetching listings:', error);
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
+  
   
 
   updateListing: async (req, res) => {
