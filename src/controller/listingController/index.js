@@ -138,19 +138,80 @@ export const listingController = {
   },
   
   
-  getAllListings:async(req,res)=>{
-    try{
-      const data=await Listing.find()
-      if (!data) {
+  getAllListings: async (req, res) => {
+    try {
+      const loggedInUserId = req.query.userId; // Get userId from query parameters
+      let listings;
+  
+      if (loggedInUserId) {
+        // If userId is provided, exclude listings by the logged-in user
+        listings = await Listing.find({ hostId: { $ne: loggedInUserId } });
+      } else {
+        // Otherwise, fetch all listings
+        listings = await Listing.find();
+      }
+  
+      if (!listings.length) {
+        return res.status(404).json({ message: 'No listings found.' });
+      }
+  
+      res.status(200).json({ message: 'Listings fetched successfully.', listings });
+    } catch (error) {
+      console.error('Error fetching listings:', error);
+      res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    }
+  },
+  
+  
+  updateListing: async (req, res) => {
+    try {
+      const listingId = req.params.id;
+      const { imageIndex, ...updateData } = req.body; 
+      const newImage = req.file?.path; 
+      const listing = await Listing.findById(listingId);
+  
+      if (!listing) {
+        return res.status(404).json({ message: 'Listing not found.' });
+      }
+        if (newImage && typeof imageIndex !== 'undefined') {
+        if (!Array.isArray(listing.photos) || imageIndex < 0 || imageIndex >= listing.photos.length) {
+          return res.status(400).json({ message: 'Invalid image index.' });
+        }
+        listing.photos[imageIndex] = newImage;
+      }
+        if (Object.keys(updateData).length > 0) {
+        Object.keys(updateData).forEach((key) => {
+          if (listing[key] !== undefined) {
+            listing[key] = updateData[key];
+          }
+        });
+      }
+        await listing.save();
+  
+      res.status(200).json({ message: 'Listing updated successfully', listing });
+    } catch (error) {
+      console.error('Error updating listing:', error);
+      res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    }
+  },
+  
+  deleteListing: async (req, res) => {
+    try {
+      const listingId = req.params.id;
+
+      const deletedListing = await Listing.findByIdAndDelete(listingId);
+
+      if (!deletedListing) {
         return res.status(404).json({ message: 'Listing not found' });
       }
-        res.status(200).json({ message: 'Listing fetched successfully', data });
-      
-    }catch(error){
-      res.status(500).json({ message: 'Internal Server Error', error: error.message });
 
+      res.status(200).json({ message: 'Listing deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting listing:', error);
+      res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
-  }
+  },
+
 
 };
 

@@ -7,7 +7,8 @@ const listingRoute = (app) => {
     app.get('/listings/:hostId', authenticateHost,listingController.getListingsByHostId);
     app.get('/listing/:id',listingController.getListingById);
     app.get('/all-listring',listingController.getAllListings)
-
+    app.put('/listing/:id', authenticateHost, upload.single('image'), listingController.updateListing);
+    app.delete('/listing/:id', authenticateHost, listingController.deleteListing);
 };
 
 export default listingRoute;

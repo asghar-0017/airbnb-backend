@@ -345,14 +345,6 @@ getUserBookings: async (req, res) => {
 
       return {
         ...bookingData,
-        listingDetails: bookingData.listingId
-          ? {
-              name: bookingData.listingId.name,
-              description: bookingData.listingId.description,
-              price: bookingData.listingId.price,
-              photoUrl: bookingData.listingId.photoUrl,
-            }
-          : null, 
         status,
       };
     });
