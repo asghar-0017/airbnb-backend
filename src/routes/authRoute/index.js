@@ -1,6 +1,6 @@
 import authController from '../../controller/authController/index.js';
 import passport from 'passport';
-import  {authenticateHost } from '../../middleWare/index.js';
+import  {authenticateHost } from '../../middleWare/authenticate/index.js';
 import upload from '../../config/cloudnry/index.js';
 
 const authRoute = (app) => {

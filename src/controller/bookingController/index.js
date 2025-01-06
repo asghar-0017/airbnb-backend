@@ -146,6 +146,7 @@ deleteBooking: async (req, res) => {
 getTemporaryBookings: async (req, res) => {
   try {
     const listings = await Listing.find({ hostId: req.user._id }).select('_id');
+    console.log("listings",listings)
     if (listings.length === 0) {
       return res.status(404).json({ message: 'No listings found for this host.' });
     }

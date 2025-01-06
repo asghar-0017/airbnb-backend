@@ -24,19 +24,15 @@ const adminService = {
 
   logout: async (token) => {
     try {
-      // Find the admin user whose session contains the given token
       const admin = await Admin.findOne({ 'sessions.token': token });
       if (admin) {
-        // Filter out the token from the sessions array
         admin.sessions = admin.sessions.filter(session => session.token !== token);
-  
-        // Save the updated admin document
-        await admin.save();
+          await admin.save();
   
         return true;
       }
   
-      return false; // No admin found with the token or the session does not exist
+      return false; 
     } catch (error) {
       console.error('Error logging out user:', error);
       return false;
@@ -64,7 +60,7 @@ const adminService = {
       if (admin) {
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         admin.password = hashedPassword;
-        admin.resetCode = undefined; // Clear reset code after use
+        admin.resetCode = undefined; 
         await admin.save();
         return true;
       }
@@ -74,24 +70,22 @@ const adminService = {
       throw new Error('Failed to update password');
     }
   },
-  
-  
+
 
   verifyToken: async (token) => {
     try {
-      const decoded = jwt.verify(token, secretKey); // Verify the JWT token
+      const decoded = jwt.verify(token, secretKey); 
       console.log('Decoded userName:', decoded.userName);
       const admin = await Admin.findOne({ userName: decoded.userName });
-      console.log('Admin found:', admin); // Log the found admin  
-      // Check if the admin exists and the token matches one of the sessions
+      console.log('Admin found:', admin);
       if (admin && admin.sessions.some((session) => session.token === token)) {
-        return { isValid: true }; // Return isValid: true if the token is found in the sessions
+        return { isValid: true };
       }
   
-      return { isValid: false }; // Return isValid: false if token not found or session mismatch
+      return { isValid: false }; 
     } catch (error) {
       console.error('Error verifying token:', error.message);
-      return { isValid: false }; // Return false if any error occurs during token verification
+      return { isValid: false }; 
     }
   },
   
