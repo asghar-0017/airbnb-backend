@@ -1,5 +1,6 @@
 import listingModel from '../../model/listingModel/index.js';
 import Listing from '../../model/listingModel/index.js';
+import temporaryLIsting from '../../model/temporaryLIsting/index.js';
 import Host from '../../model/hostModel/index.js'
 
 export const listingController = {
@@ -42,7 +43,7 @@ export const listingController = {
         return res.status(400).json({ message: 'Valid weekendPrice is required.' });
       }
 
-      const newListing = new Listing({
+      const newListing = new temporaryLIsting({
         hostId: req.user._id,
         placeType,
         roomType,
