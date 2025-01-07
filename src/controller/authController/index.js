@@ -48,15 +48,25 @@ const authController = {
     try {
       const { hostId } = req.params;
       const dataUpdate = { ...req.body };
-  
-      if (req.file) {
-        dataUpdate.photoProfile = req.file.path; 
-      }
-  
+      
       const host = await authUser.findById(hostId);
       if (!host) {
         return res.status(404).json({ message: "Host Not Found" });
       }
+
+      if (req.file) {
+        dataUpdate.photoProfile = req.file.path; 
+      }
+      if(dataUpdate.email){
+        return res.status(400).send({message:"Email can not be Update"})
+      }
+      if (req.files && req.files.length === 2) {
+        const cnicImages = req.files.map(file => file.path);
+        dataUpdate.CNIC = cnicImages;
+      } else if (req.files && req.files.length != 2) {
+      return res.status(400).json({ message: "Both front and back CNIC images are required." });
+    }
+  
   
       const updatedData = await authUser.findByIdAndUpdate(hostId, dataUpdate, { new: true });
       return res.status(200).send({ message: "Success", updatedData });

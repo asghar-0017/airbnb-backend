@@ -6,8 +6,13 @@ import upload from '../../config/cloudnry/index.js';
 const authRoute = (app) => {
   app.post('/signUp', authController.signUp);
   app.post('/login', authController.login);
-  app.put('/update-profile/:hostId', authenticateHost, upload.single('image'), authController.updateProfile);
-
+  // app.put('/update-profile/:hostId', authenticateHost, upload.single('image'), authController.updateProfile);
+  app.put('/update-profile/:hostId', authenticateHost, 
+    upload.fields([
+      { name: 'profileImage', maxCount: 1 }, 
+      { name: 'CNIC', maxCount: 2 }  
+    ]), 
+    authController.updateProfile);
   app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
 
   app.get(

@@ -9,6 +9,8 @@ const hostSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    immutable: true, 
+
   },
   phoneNumber:{
     type:Number,
@@ -33,6 +35,16 @@ const hostSchema = new mongoose.Schema({
   photoProfile: {
     type: String,
     default: ''
+  },
+  CNIC: {
+    type: [String],
+    validate: {
+      validator: function (value) {
+        return value && value.length === 2; // Ensures both front and back images are uploaded
+      },
+      message: 'Both front and back images of CNIC are required.',
+    },
+    required: true,
   },
 }, {
   timestamps: true, 

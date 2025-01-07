@@ -2,7 +2,6 @@ import adminService from '../../service/AdminAuthService/index.js';
 import generateResetCode from '../../mediater/generateResetCode/index.js';
 import sendResetEmail from '../../mediater/sendReserEmail/index.js';
 import dotenv from 'dotenv';
-import Admin from '../../model/adminAuth/index.js';
 
 
 dotenv.config();
