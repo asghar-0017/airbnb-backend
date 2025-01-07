@@ -23,11 +23,10 @@ const temporaryListingSchema = new mongoose.Schema({
   postcode: { type: String, required: false },
   latitude: { type: Number, required: false },
   longitude: { type: Number, required: false },
-  
   guestCapacity: { type: Number, required: false },
   beds: { type: Number, required: false },
   bathrooms: { type: Number, required: false },
-  bedrooms:{type: Number, required: false },
+  bedrooms: { type: Number, required: false },
   amenities: { type: [String], required: false },
   photos: {
     type: [String],
@@ -49,30 +48,30 @@ const temporaryListingSchema = new mongoose.Schema({
     type: Number,
     required: false,
     default: function () {
-      if (!this.weekdayPrice) return 0;
-      return Math.round(this.weekdayPrice * (1 + this.weekdayCommission / 100));
+      return this.weekdayPrice
+        ? Math.round(this.weekdayPrice * (1 + this.weekdayCommission / 100))
+        : 0;
     },
   },
   weekendActualPrice: {
     type: Number,
     required: false,
     default: function () {
-      if (!this.weekendPrice) return 0;
-      return Math.round(this.weekendPrice * (1 + this.weekendCommission / 100));
-    }
+      return this.weekendPrice
+        ? Math.round(this.weekendPrice * (1 + this.weekendCommission / 100))
+        : 0;
+    },
   },
- 
-}, { timestamps: true,
+}, {
+  timestamps: true,
   toJSON: { virtuals: true },
-  toObject: { virtuals: true }, 
+  toObject: { virtuals: true },
+});
 
-}); 
-
-temporaryListingSchema
-.virtual('confirmedBookings', {
+temporaryListingSchema.virtual('confirmedBookings', {
   ref: 'ConfirmedBooking',
   localField: '_id',
   foreignField: 'listingId',
 });
 
-export default mongoose.model('temporaryListingSchema', temporaryListingSchema);
+export default mongoose.model('temporaryListing', temporaryListingSchema);

@@ -1,6 +1,6 @@
 import listingModel from '../../model/listingModel/index.js';
 import Listing from '../../model/listingModel/index.js';
-import temporaryLIsting from '../../model/temporaryLIsting/index.js';
+import temporaryListing from '../../model/temporaryLIsting/index.js';
 import Host from '../../model/hostModel/index.js'
 
 export const listingController = {
@@ -32,18 +32,14 @@ export const listingController = {
       if (!req.files || req.files.length < 3) {
         return res.status(400).json({ message: 'At least 3 photos are required.' });
       }
-
       const photos = req.files.map((file) => file.path);
-
       if (!weekdayPrice || isNaN(weekdayPrice)) {
         return res.status(400).json({ message: 'Valid weekdayPrice is required.' });
       }
-
       if (!weekendPrice || isNaN(weekendPrice)) {
         return res.status(400).json({ message: 'Valid weekendPrice is required.' });
       }
-
-      const newListing = new temporaryLIsting({
+      const newListing = new temporaryListing({
         hostId: req.user._id,
         placeType,
         roomType,
@@ -84,12 +80,9 @@ export const listingController = {
         userName:hostData.userName,
         photoProfile: hostData.photoProfile
       } 
-
-
       if (!listing) {
         return res.status(404).json({ message: 'Listing not found' });
       }
-
       res.status(200).json({ message: 'Listing fetched successfully', hostData:data,listing });
     } catch (error) {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
@@ -99,25 +92,19 @@ export const listingController = {
   getListingById: async (req, res) => {
     try {
       const id = req.params.id;
-    
-      // Fetch the listing by ID and populate the confirmedBookings field
       const listing = await Listing.findById(id).populate('confirmedBookings');
-    
       if (!listing) {
         return res.status(404).json({ message: 'Listing not found' });
       }
     
-      // Fetch the host details
       const hostData = await Host.findById(listing.hostId);
     
-      // Select specific host data fields
       const hostSelectedData = {
         userName: hostData?.userName,
         email: hostData?.email,
         photoProfile: hostData?.photoProfile,
       };
     
-      // Send the response with populated confirmedBookings
       res.status(200).json({
         message: 'Listing fetched successfully',
         hostData: hostSelectedData,
@@ -128,7 +115,7 @@ export const listingController = {
             startDate: booking.startDate,
             endDate: booking.endDate,
             totalPrice: booking.totalPrice,
-            bookingDate: booking.createdAt, // Use createdAt or bookingDate depending on your schema
+            bookingDate: booking.createdAt, 
           })),
         },
       });
@@ -146,22 +133,21 @@ export const listingController = {
   
       if (loggedInUserId) {
         listings = await Listing.find({ hostId: { $ne: loggedInUserId } })
-          .populate('hostId', 'userName email photoProfile'); // Populate specific host fields
+          .populate('hostId', 'userName email photoProfile'); 
       } else {
         listings = await Listing.find()
-          .populate('hostId', 'userName email photoProfile'); // Populate specific host fields
+          .populate('hostId', 'userName email photoProfile'); 
       }
   
       if (!listings.length) {
         return res.status(404).json({ message: 'No listings found.' });
       }
   
-      // Transform hostId into hostData
       const transformedListings = listings.map(listing => {
-        const host = listing.hostId; // Populated host data
-        const listingObject = listing.toObject(); // Convert Mongoose document to plain JS object
+        const host = listing.hostId; 
+        const listingObject = listing.toObject();
         listingObject.hostData = host;
-        delete listingObject.hostId; // Remove hostId field
+        delete listingObject.hostId; 
         return listingObject;
       });
   
