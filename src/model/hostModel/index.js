@@ -38,13 +38,7 @@ const hostSchema = new mongoose.Schema({
   },
   CNIC: {
     type: [String],
-    validate: {
-      validator: function (value) {
-        return value && value.length === 2; // Ensures both front and back images are uploaded
-      },
-      message: 'Both front and back images of CNIC are required.',
-    },
-    required: true,
+    required: false,
   },
 }, {
   timestamps: true, 
