@@ -6,13 +6,13 @@ export const adminController = {
     try {
       let listings;
 
-      listings = await TemporaryListing.find().populate('hostId'); // Populate the hostId field
+      listings = await TemporaryListing.find().populate('hostId'); 
       const transformedListings = listings.map(listing => {
-        const listingObject = listing.toObject(); // Convert listing to plain object
+        const listingObject = listing.toObject(); 
         if (listing.hostId) {
-          listingObject.hostData = listing.hostId; // Add host data
+          listingObject.hostData = listing.hostId; 
         }
-        delete listingObject.hostId; // Remove the hostId field
+        delete listingObject.hostId; 
         return listingObject;
       });
 
@@ -46,9 +46,11 @@ export const adminController = {
 
   getPendingCNICVerifications:async(req,res)=>{
     try {
-      const pendingHosts = await Host.find({ "CNIC.isVerified": false && CNIC.images.length == 2}).select(
-        "userName email photoProfile CNIC.images CNIC.isVerified"
-      );
+      const pendingHosts = await Host.find({
+        "CNIC.isVerified": false,
+        "CNIC.images": { $size: 2 },
+      }).select("userName email photoProfile CNIC.images CNIC.isVerified");
+      
       if (!pendingHosts.length) {
         return res.status(200).json({ message: "No pending CNIC verifications." });
       }
