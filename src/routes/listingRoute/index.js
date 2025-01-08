@@ -5,6 +5,7 @@ import combinedAuthenticate from '../../middleWare/combineAuthenticate/index.js'
 
 const listingRoute = (app) => {
     app.post('/listings',combinedAuthenticate, upload.array('photos', 8), listingController.createListing);
+    app.get('/not-verified-listing/:listingId',combinedAuthenticate, listingController.notVerifiedListing)
     app.get('/listings/:hostId', combinedAuthenticate,listingController.getListingsByHostId);
     app.get('/listing/:id',listingController.getListingById);
     app.get('/all-listring',listingController.getAllListings)

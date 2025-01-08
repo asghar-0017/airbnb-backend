@@ -49,13 +49,12 @@ const authController = {
       const { hostId } = req.params;
       const dataUpdate = { ...req.body };
   
-      const host = await authentication.findById(hostId);
+      const host = await authUser.findById(hostId);
       if (!host) {
         return res.status(404).json({ message: "Host Not Found" });
       }
-  
-      if (req.file) {
-        dataUpdate.photoProfile = req.file.path;
+       if (req.files && req.files.profileImage && req.files.profileImage[0]) {
+        dataUpdate.photoProfile = req.files.profileImage[0].path;
       }
   
       if (dataUpdate.email) {
@@ -68,13 +67,24 @@ const authController = {
       } else if (req.files && req.files.CNIC && req.files.CNIC.length !== 2) {
         return res.status(400).json({ message: "Both front and back CNIC images are required." });
       }
+    
+      const updatedHost = await authUser.findByIdAndUpdate(
+        hostId,
+        { $set: dataUpdate },
+        { new: true }
+      );
   
-      const updatedData = await authentication.findByIdAndUpdate(hostId, dataUpdate, { new: true });
-      return res.status(200).send({ message: "Success", updatedData });
+      if (!updatedHost) {
+        return res.status(404).json({ message: "Host Not Found" });
+      }
+  
+      return res.status(200).json({ message: "Profile updated successfully", updatedHost });
     } catch (error) {
+      console.error("Error updating profile:", error); 
       return res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
+  
   
   
   verifyToken: async (req, res) => {
