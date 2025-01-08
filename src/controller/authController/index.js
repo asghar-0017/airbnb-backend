@@ -63,7 +63,7 @@ const authController = {
   
       if (req.files && req.files.CNIC && req.files.CNIC.length === 2) {
         const cnicImages = req.files.CNIC.map(file => file.path);
-        dataUpdate.CNIC = { images: cnicImages, isVerified: true };
+        dataUpdate.CNIC = { images: cnicImages };
       } else if (req.files && req.files.CNIC && req.files.CNIC.length !== 2) {
         return res.status(400).json({ message: "Both front and back CNIC images are required." });
       }

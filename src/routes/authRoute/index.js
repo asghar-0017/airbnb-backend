@@ -7,7 +7,6 @@ import combinedAuthenticate from '../../middleWare/combineAuthenticate/index.js'
 const authRoute = (app) => {
   app.post('/signUp', authController.signUp);
   app.post('/login', authController.login);
-  // app.put('/update-profile/:hostId', authenticateHost, upload.single('image'), authController.updateProfile);
     app.put('/update-profile/:hostId', combinedAuthenticate, 
       upload.fields([
         { name: 'profileImage', maxCount: 1 }, 

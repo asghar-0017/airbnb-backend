@@ -1,6 +1,7 @@
 import listingModel from '../../model/listingModel/index.js';
 import Listing from '../../model/listingModel/index.js';
 import notVerifiedListingSchema from '../../model/notVerifiedListing/index.js';
+import temporaryListingSchema from '../../model/temporaryLIsting/index.js';
 import Host from '../../model/hostModel/index.js'
 
 export const listingController = {
@@ -63,34 +64,56 @@ export const listingController = {
     }
   },
 
-  notVerifiedListing:async(req,res)=>{
+  notVerifiedListing: async (req, res) => {
     try {
-      const id = req.params.id;
-      const listing = await notVerifiedListingSchema.findById(id)
+      const id = req.params.id; 
+      const listing = await notVerifiedListingSchema.findById(id);
+      
       if (!listing) {
         return res.status(404).json({ message: 'Listing not found' });
       }
-    
+  
       const hostData = await Host.findById(listing.hostId);
-    
       const hostSelectedData = {
         userName: hostData?.userName,
         email: hostData?.email,
         photoProfile: hostData?.photoProfile,
+        cnicStatus: hostData?.CNIC?.isVerified 
       };
-    
+      if (!hostData) {
+        return res.status(404).json({ message: 'Host not found for the listing' });
+      }
+  
+      if (hostData.CNIC.isVerified) {
+        const tempListingData = {
+          ...listing.toObject(),
+          hostData:hostSelectedData
+        };
+          const temporaryListing = new temporaryListingSchema(tempListingData);
+        await temporaryListing.save();
+  
+        await notVerifiedListingSchema.findByIdAndDelete(id);
+  
+        return res.status(200).json({
+          message: 'CNIC verified. Listing moved to temporary listing table.',
+          temporaryListing,
+        });
+      }    
+  
       res.status(200).json({
         message: 'Listing fetched successfully',
-        hostData: hostSelectedData,
         listing: {
           ...listing.toObject(),
+          hostData: hostSelectedData,
+          
         },
       });
     } catch (error) {
-      console.error('Error fetching listing:', error);
+      console.error('Error processing listing:', error);
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
+  
 
   getListingsByHostId: async (req, res) => {
     try {
