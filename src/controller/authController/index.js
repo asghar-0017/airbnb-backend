@@ -48,27 +48,28 @@ const authController = {
     try {
       const { hostId } = req.params;
       const dataUpdate = { ...req.body };
-      
-      const host = await authUser.findById(hostId);
+  
+      const host = await authentication.findById(hostId);
       if (!host) {
         return res.status(404).json({ message: "Host Not Found" });
       }
-
+  
       if (req.file) {
-        dataUpdate.photoProfile = req.file.path; 
+        dataUpdate.photoProfile = req.file.path;
       }
-      if(dataUpdate.email){
-        return res.status(400).send({message:"Email can not be Update"})
+  
+      if (dataUpdate.email) {
+        return res.status(400).send({ message: "Email cannot be updated." });
       }
-      if (req.files && req.files.length === 2) {
-        const cnicImages = req.files.map(file => file.path);
-        dataUpdate.CNIC = cnicImages;
-      } else if (req.files && req.files.length != 2) {
-      return res.status(400).json({ message: "Both front and back CNIC images are required." });
-    }
   
+      if (req.files && req.files.CNIC && req.files.CNIC.length === 2) {
+        const cnicImages = req.files.CNIC.map(file => file.path);
+        dataUpdate.CNIC = { images: cnicImages, isVerified: true };
+      } else if (req.files && req.files.CNIC && req.files.CNIC.length !== 2) {
+        return res.status(400).json({ message: "Both front and back CNIC images are required." });
+      }
   
-      const updatedData = await authUser.findByIdAndUpdate(hostId, dataUpdate, { new: true });
+      const updatedData = await authentication.findByIdAndUpdate(hostId, dataUpdate, { new: true });
       return res.status(200).send({ message: "Success", updatedData });
     } catch (error) {
       return res.status(500).json({ message: 'Internal Server Error', error: error.message });

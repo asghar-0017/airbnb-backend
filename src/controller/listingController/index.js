@@ -4,41 +4,104 @@ import temporaryListing from '../../model/temporaryLIsting/index.js';
 import Host from '../../model/hostModel/index.js'
 
 export const listingController = {
-  createListing: async (req, res) => {
-    console.log("API hit");
-    try {
-      const {
-        placeType,
-        roomType,
-        guestCapacity,
-        bedrooms,
-        beds,
-        bathrooms,
-        amenities,
-        title,
-        description,
-        weekdayPrice,
-        weekendPrice,
-        street,
-        flat,
-        city,
-        town,
-        postcode,
-        latitude,
-        longitude
-      
-      } = req.body;
+  // createListing: async (req, res) => {
+  //   console.log("API hit");
+  //   try {
 
+  //     const {
+  //       placeType,
+  //       roomType,
+  //       guestCapacity,
+  //       bedrooms,
+  //       beds,
+  //       bathrooms,
+  //       amenities,
+  //       title,
+  //       description,
+  //       weekdayPrice,
+  //       weekendPrice,
+  //       street,
+  //       flat,
+  //       city,
+  //       town,
+  //       postcode,
+  //       latitude,
+  //       longitude
+      
+  //     } = req.body;
+
+  //     if (!req.files || req.files.length < 3) {
+  //       return res.status(400).json({ message: 'At least 3 photos are required.' });
+  //     }
+  //     const photos = req.files.map((file) => file.path);
+  //     if (!weekdayPrice || isNaN(weekdayPrice)) {
+  //       return res.status(400).json({ message: 'Valid weekdayPrice is required.' });
+  //     }
+  //     if (!weekendPrice || isNaN(weekendPrice)) {
+  //       return res.status(400).json({ message: 'Valid weekendPrice is required.' });
+  //     }
+  //     const newListing = new temporaryListing({
+  //       hostId: req.user._id,
+  //       placeType,
+  //       roomType,
+  //       guestCapacity,
+  //       bedrooms,
+  //       beds,
+  //       bathrooms,
+  //       amenities,
+  //       photos,
+  //       title,
+  //       description,
+  //       weekdayPrice: parseFloat(weekdayPrice),
+  //       weekendPrice: parseFloat(weekendPrice),
+  //       street,
+  //       flat,
+  //       city,
+  //       town,
+  //       postcode,
+  //       latitude,
+  //       longitude
+  //     });
+
+  //     await newListing.save();
+  //     res.status(201).json({ message: 'Listing created successfully', listing: newListing });
+  //   } catch (error) {
+  //     console.error('Error creating listing:', error);
+  //     res.status(500).json({ message: 'Internal Server Error', error: error.message });
+  //   }
+  // },
+
+  createListing: async (req, res) => {
+    try {
+      const host = await Host.findById(req.user._id);
+      if (!host) {
+        return res.status(404).json({ message: "Host not found." });
+      }
+  
+      if (!host.CNIC || !host.CNIC.isVerified) {
+        return res.status(403).json({ message: "You must verify your CNIC before creating a listing." });
+      }
+  
+      const {
+        placeType, roomType, guestCapacity, bedrooms, beds, bathrooms, amenities,
+        title, description, weekdayPrice, weekendPrice, street, flat, city, town, postcode,
+        latitude, longitude
+      } = req.body;
+  
       if (!req.files || req.files.length < 3) {
         return res.status(400).json({ message: 'At least 3 photos are required.' });
       }
+  
       const photos = req.files.map((file) => file.path);
+  
       if (!weekdayPrice || isNaN(weekdayPrice)) {
         return res.status(400).json({ message: 'Valid weekdayPrice is required.' });
       }
+  
       if (!weekendPrice || isNaN(weekendPrice)) {
         return res.status(400).json({ message: 'Valid weekendPrice is required.' });
       }
+  
       const newListing = new temporaryListing({
         hostId: req.user._id,
         placeType,
@@ -59,9 +122,9 @@ export const listingController = {
         town,
         postcode,
         latitude,
-        longitude
+        longitude,
       });
-
+  
       await newListing.save();
       res.status(201).json({ message: 'Listing created successfully', listing: newListing });
     } catch (error) {
@@ -69,7 +132,7 @@ export const listingController = {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
-
+  
   getListingsByHostId: async (req, res) => {
     try {
       const hostId = req.params.hostId; 

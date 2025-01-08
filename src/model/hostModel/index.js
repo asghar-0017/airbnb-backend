@@ -37,9 +37,13 @@ const hostSchema = new mongoose.Schema({
     default: ''
   },
   CNIC: {
-    type: [String],
+    type: {
+      images: [String],
+      isVerified: { type: Boolean, default: false },
+    },
     required: false,
-  },
+    default: {},
+  }
 }, {
   timestamps: true, 
 });
