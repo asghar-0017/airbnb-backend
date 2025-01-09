@@ -122,6 +122,19 @@ export const adminController = {
       console.error("Error verifying CNIC:", error);
       res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
+  },
+  getTemporaryListing: async (req, res) => {
+    try {
+      const listingId = req.params.listingId; 
+      const data = await TemporaryListing.findById(listingId);
+      if (data) {
+        return res.status(200).send({ message: "Listing fetched successfully", data: data });
+      } 
+      return res.status(404).send({ message: 'Listing Not Found' });
+    } catch (error) {
+      res.status(500).send({ message: "Internal Server Error", error: error.message });
+    }
   }
+  
   
 };

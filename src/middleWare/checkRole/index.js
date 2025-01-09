@@ -1,6 +1,5 @@
 const checkRole = (roles) => {
     return (req, res, next) => {
-      console.log('req.user:', req.user);
         if (!req.user) {
         return res.status(403).json({ message: 'Forbidden: User not authenticated' });
       }
