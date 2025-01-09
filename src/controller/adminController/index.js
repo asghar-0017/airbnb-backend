@@ -23,27 +23,57 @@ export const adminController = {
     }
   },
 
+  // confirmListing: async (req, res) => {
+  //   try {
+  //     const listingId = req.params.listingId;
+  //     console.log("listingId",listingId)
+
+  //     const temporaryListingData = await TemporaryListing.findById(listingId);
+  //     if (!temporaryListingData) {
+  //       return res.status(404).json({ message: 'Temporary listing not found.' });
+  //     }
+
+  //     const confirmedListing = new ListingModel(temporaryListingData.toObject());
+  //     await confirmedListing.save();
+
+  //     await TemporaryListing.findByIdAndDelete(listingId);
+
+  //     res.status(200).json({ message: 'Listing confirmed successfully.' });
+  //   } catch (error) {
+  //     console.error('Error confirming listing:', error);
+  //     res.status(500).json({ message: 'Internal Server Error', error: error.message });
+  //   }
+  // },
+
   confirmListing: async (req, res) => {
     try {
       const listingId = req.params.listingId;
+      console.log("listingId",listingId)
+        const temporaryListingData = await TemporaryListing.findById(listingId);
+        console.log("temporaryListingData",temporaryListingData)
 
-      const temporaryListingData = await TemporaryListing.findById(listingId);
       if (!temporaryListingData) {
         return res.status(404).json({ message: 'Temporary listing not found.' });
       }
-
-      const confirmedListing = new ListingModel(temporaryListingData.toObject());
+        const hostData = await Host.findById(temporaryListingData.hostId);
+        console.log("Host Data",hostData)
+      if (!hostData) {
+        return res.status(404).json({ message: 'Host not found.' });
+      }
+        if (!hostData.CNIC?.isVerified) {
+        return res.status(400).json({ message: 'Host CNIC is not verified. Cannot confirm listing.' });
+      }
+        const confirmedListing = new ListingModel(temporaryListingData.toObject());
       await confirmedListing.save();
-
-      await TemporaryListing.findByIdAndDelete(listingId);
-
-      res.status(200).json({ message: 'Listing confirmed successfully.' });
+        await TemporaryListing.findByIdAndDelete(listingId);
+  
+      res.status(200).json({ message: 'Listing confirmed successfully.', confirmedListing });
     } catch (error) {
       console.error('Error confirming listing:', error);
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
-
+  
   getPendingCNICVerifications:async(req,res)=>{
     try {
       const pendingHosts = await Host.find({

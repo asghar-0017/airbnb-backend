@@ -53,6 +53,7 @@ const listingSchema = new mongoose.Schema({
       return Math.round(this.weekdayPrice * (1 + this.weekdayCommission / 100));
     },
   },
+
   weekendActualPrice: {
     type: Number,
     required: false,
@@ -61,15 +62,6 @@ const listingSchema = new mongoose.Schema({
       return Math.round(this.weekendPrice * (1 + this.weekendCommission / 100));
     }
   },
-  // bookings: [
-  //   {
-  //     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
-  //     startDate: { type: Date, required: false },
-  //     endDate: { type: Date, required: false },
-  //     totalPrice: { type: Number, required: false },
-  //     bookingDate:{type:Date,default:Date.now()}
-  //   },
-  // ],
 }, { timestamps: true,
   toJSON: { virtuals: true },
   toObject: { virtuals: true }, 

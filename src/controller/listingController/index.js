@@ -67,23 +67,31 @@ export const listingController = {
 
   getListingsByHostId: async (req, res) => {
     try {
-      const hostId = req.params.hostId; 
-      const hostData = await Host.findById(hostId);
-      const listing = await Listing.find({hostId});
-      const data={
-        email:hostData.email,
-        userName:hostData.userName,
-        photoProfile: hostData.photoProfile,
-        CNICStatus:hostData.CNIC.isVerified
-      } 
-      if (!listing) {
-        return res.status(404).json({ message: 'Listing not found' });
+      const hostId = req.params.hostId;
+        const hostData = await Host.findById(hostId);
+      if (!hostData) {
+        return res.status(404).json({ message: 'Host not found.' });
       }
-      res.status(200).json({ message: 'Listing fetched successfully', hostData:data,listing });
+        const temporaryListings = await temporaryListingSchema.find({ hostId });
+        const confirmedListings = await Listing.find({ hostId });
+  
+      res.status(200).json({
+        message: 'Host listings fetched successfully.',
+        hostDetails: {
+          userName: hostData.userName,
+          email: hostData.email,
+          photoProfile: hostData.photoProfile,
+          CNICStatus: hostData.CNIC?.isVerified || false,
+        },
+        temporaryListings,
+        confirmedListings,
+      });
     } catch (error) {
+      console.error('Error fetching host listings:', error);
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
+  
 
   getListingById: async (req, res) => {
     try {
