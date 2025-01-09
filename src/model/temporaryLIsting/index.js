@@ -8,7 +8,7 @@ const temporaryListingSchema = new mongoose.Schema({
   },
   placeType: {
     type: String,
-    enum: ['House', 'Apartment', 'Shared Room'],
+    enum: ['House', 'Apartment', 'Shared Room','Bed & breakfast','Boat','Cabin','Campervan/motorhome','Casa particular','Castle'],
     required: false,
   },
   roomType: {

@@ -14,7 +14,6 @@ createBooking: async (req, res) => {
   try {
     const { listingId } = req.params;
     const { startDate, endDate, guestCapacity, paymentMethodId } = req.body;
-
     if (!startDate || !endDate || !guestCapacity || !paymentMethodId) {
       return res.status(400).json({ message: 'Missing required fields.' });
     }
@@ -23,23 +22,19 @@ createBooking: async (req, res) => {
     if (parsedStartDate >= parsedEndDate) {
       return res.status(400).json({ message: 'End date must be after start date.' });
     }
-
     const listing = await Listing.findById(listingId);
     if (!listing) {
       return res.status(404).json({ message: 'Listing not found.' });
     }
-
     if (guestCapacity > listing.guestCapacity) {
       return res.status(400).json({ message: 'Guest capacity exceeds limit.' });
     }
-
     const totalNights = Math.ceil((parsedEndDate - parsedStartDate) / (1000 * 60 * 60 * 24));
     let totalPrice = 0;
-
     for (let i = 0; i < totalNights; i++) {
       const currentDay = new Date(parsedStartDate);
       currentDay.setDate(currentDay.getDate() + i);
-      const isWeekend = [0, 6].includes(currentDay.getDay());
+      const isWeekend = [0, 4].includes(currentDay.getDay());
       totalPrice += isWeekend ? listing.weekendActualPrice : listing.weekdayActualPrice;
     }
     const paymentIntent = await stripeClient.paymentIntents.create({
@@ -47,10 +42,9 @@ createBooking: async (req, res) => {
       currency: 'pkr', 
       payment_method: paymentMethodId, 
       confirm: false,
-      setup_future_usage: 'off_session', // Save card info for future use
+      setup_future_usage: 'off_session', 
 
     });
-
     const booking = await TemporaryBooking.create({
       userId: req.user._id,
       listingId,
@@ -60,7 +54,6 @@ createBooking: async (req, res) => {
       totalPrice,
       paymentIntentId: paymentIntent.id,
     });
-
     res.status(201).json({
       message: 'Booking created.',
       booking,
