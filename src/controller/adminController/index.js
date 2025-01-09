@@ -7,6 +7,12 @@ export const adminController = {
       let listings;
 
       listings = await TemporaryListing.find().populate('hostId'); 
+
+     listings = listings.filter(listing => {
+      const host = listing.hostId; 
+      return host && host.CNIC && host.CNIC.isVerified; 
+    });
+
       const transformedListings = listings.map(listing => {
         const listingObject = listing.toObject(); 
         if (listing.hostId) {
