@@ -29,7 +29,7 @@ export const reviewListingController = {
           const booking = await ConfirmedBooking.findOne({
             userId,
             listingId,
-            endDate: { $lt: today },
+            endDate: { $eq: today }, 
           });
     
           if (!booking) {

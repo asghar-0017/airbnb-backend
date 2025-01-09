@@ -321,44 +321,129 @@ getUpcomingBookings: async (req, res) => {
 
 
 
+// getUserBookings: async (req, res) => {
+//   try {
+//     const userId = req.user._id;
+
+//     const [temporaryBookings, confirmedBookings] = await Promise.all([
+//       TemporaryBooking.find({ userId })
+//         .populate({
+//           path: 'listingId',
+//           populate: { path: 'hostId', select: 'userName email photoProfile' },
+//         })
+//         .exec(),
+//       ConfirmedBooking.find({ userId })
+//         .populate({
+//           path: 'listingId',
+//           populate: { path: 'hostId', select: 'userName email photoProfile' },
+//         })
+//         .exec(),
+//     ]);
+
+//     const allBookings = [...temporaryBookings, ...confirmedBookings];
+
+//     if (allBookings.length === 0) {
+//       return res.status(200).json({ message: 'No bookings found for this user.', userBookings: [] });
+//     }
+
+//     const bookingsWithDetails = allBookings.map((booking) => {
+//       const bookingData = booking.toObject();
+//       const status = booking instanceof TemporaryBooking ? 'Pending' : 'Confirmed';
+
+//       const hostData = bookingData.listingId?.hostId;
+//       const { hostId, ...listingDetails } = bookingData.listingId || {};
+
+//       return {
+//         _id: bookingData._id,
+//         userId: bookingData.userId,
+//         listingId: {
+//           ...listingDetails,
+//           id: listingDetails._id,
+//         },
+//         startDate: bookingData.startDate,
+//         endDate: bookingData.endDate,
+//         guestCapacity: bookingData.guestCapacity,
+//         totalPrice: bookingData.totalPrice,
+//         paymentIntentId: bookingData.paymentIntentId,
+//         createdAt: bookingData.createdAt,
+//         __v: bookingData.__v,
+//         status,
+//         hostData: hostData
+//           ? {
+//               userName: hostData.userName,
+//               email: hostData.email,
+//               photoProfile: hostData.photoProfile,
+//             }
+//           : null, 
+//       };
+//     });
+
+//     res.status(200).json({ userBookings: bookingsWithDetails });
+//   } catch (error) {
+//     console.error('Error fetching user bookings:', error);
+//     res.status(500).json({ message: 'Internal Server Error', error: error.message });
+//   }
+// },
+
 getUserBookings: async (req, res) => {
   try {
-    const userId = req.user._id;
+    const hostId = req.user._id;  // The host's user ID
 
+    // Fetch all temporary and confirmed bookings for this host's listings
     const [temporaryBookings, confirmedBookings] = await Promise.all([
-      TemporaryBooking.find({ userId })
+      TemporaryBooking.find({ "listingId.hostId": hostId })  // Find bookings for this host's listings
         .populate({
           path: 'listingId',
-          populate: { path: 'hostId', select: 'userName email photoProfile' },
+          select: 'title guestCapacity totalPrice startDate endDate hostId',  // Select relevant fields from the listing
+          populate: { path: 'hostId', select: 'userName email photoProfile' },  // Populate host details of the listing
         })
+        .populate('userId', 'userName email photoProfile phoneNumber')  // Populate guest (user) details
         .exec(),
-      ConfirmedBooking.find({ userId })
+        
+      ConfirmedBooking.find({ "listingId.hostId": hostId })  // Same for confirmed bookings
         .populate({
           path: 'listingId',
+          select: 'title guestCapacity totalPrice startDate endDate hostId',
           populate: { path: 'hostId', select: 'userName email photoProfile' },
         })
+        .populate('userId', 'userName email photoProfile phoneNumber')  // Populate guest (user) details
         .exec(),
     ]);
 
     const allBookings = [...temporaryBookings, ...confirmedBookings];
 
     if (allBookings.length === 0) {
-      return res.status(200).json({ message: 'No bookings found for this user.', userBookings: [] });
+      return res.status(200).json({ message: 'No bookings found for your listings.', userBookings: [] });
     }
 
     const bookingsWithDetails = allBookings.map((booking) => {
       const bookingData = booking.toObject();
       const status = booking instanceof TemporaryBooking ? 'Pending' : 'Confirmed';
 
-      const hostData = bookingData.listingId?.hostId;
-      const { hostId, ...listingDetails } = bookingData.listingId || {};
+      const { listingId, userId: guest } = bookingData;  // Extract listing details and guest (user) details
+
+      const hostData = listingId?.hostId ? {
+        userName: listingId.hostId.userName,
+        email: listingId.hostId.email,
+        photoProfile: listingId.hostId.photoProfile,
+      } : null;
+
+      const guestData = guest ? {
+        userName: guest.userName,
+        email: guest.email,
+        photoProfile: guest.photoProfile,
+        phoneNumber: guest.phoneNumber,
+      } : null;
+
+      const { _id, hostId, ...listingDetails } = listingId || {};  // Remove hostId from listing details
 
       return {
         _id: bookingData._id,
-        userId: bookingData.userId,
+        userId: bookingData.userId,  // Guest's user ID (the one who booked the listing)
+        guestData,  // Include guest data (who booked the listing)
         listingId: {
           ...listingDetails,
-          id: listingDetails._id,
+          id: _id,  // Include listing ID
         },
         startDate: bookingData.startDate,
         endDate: bookingData.endDate,
@@ -368,24 +453,17 @@ getUserBookings: async (req, res) => {
         createdAt: bookingData.createdAt,
         __v: bookingData.__v,
         status,
-        hostData: hostData
-          ? {
-              userName: hostData.userName,
-              email: hostData.email,
-              photoProfile: hostData.photoProfile,
-            }
-          : null, 
+        hostData,  // Include host data for the listing
       };
     });
 
     res.status(200).json({ userBookings: bookingsWithDetails });
+
   } catch (error) {
-    console.error('Error fetching user bookings:', error);
+    console.error('Error fetching bookings for your listings:', error);
     res.status(500).json({ message: 'Internal Server Error', error: error.message });
   }
-},
-
-
+}
 
 
   

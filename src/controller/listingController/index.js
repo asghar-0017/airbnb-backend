@@ -32,11 +32,10 @@ export const listingController = {
         return res.status(400).json({ message: 'Valid weekendPrice is required.' });
       }
       const amenitiesArray = Array.isArray(amenities)
-      ? amenities // If already an array, use as-is
+      ? amenities 
       : typeof amenities === 'string'
-      ? amenities.split(',').map((item) => item.trim()) // Split if it's a comma-separated string
-      : []; // Default to an empty array if undefined or invalid
-
+      ? amenities.split(',').map((item) => item.trim()) 
+      : []; 
   
       const newListing = new temporaryListingSchema({
         hostId: req.user._id,
