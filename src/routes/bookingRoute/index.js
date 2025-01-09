@@ -14,6 +14,7 @@ const bookingRoute = (app) => {
     app.get('/upcoming-bookings', combinedAuthenticate, bookingController.getUpcomingBookings);
 
     app.get('/guest-bookings', combinedAuthenticate, bookingController.getUserBookings);
+    app.get('/confirmed-booking-dates', combinedAuthenticate, bookingController.getConfirmedBookingDates);
 
 }
 export default bookingRoute;
