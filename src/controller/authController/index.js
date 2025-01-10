@@ -23,7 +23,6 @@ const authController = {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     };
   },
-
   login: async (req, res) => {
     try {
       const { email, password } = req.body;
@@ -43,7 +42,6 @@ const authController = {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
-
   updateProfile: async (req, res) => {
     try {
       const { hostId } = req.params;
@@ -84,9 +82,6 @@ const authController = {
       return res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
-  
-  
-  
   verifyToken: async (req, res) => {
     try {
       const token = req.headers['authorization']?.split(' ')[1];

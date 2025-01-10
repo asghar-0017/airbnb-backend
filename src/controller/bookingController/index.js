@@ -2,11 +2,9 @@ import Listing from '../../model/listingModel/index.js';
 import TemporaryBooking from '../../model/temporaryBooking/index.js';
 import ConfirmedBooking from '../../model/confirmBooking/index.js';
 import sendConfirmationEmail from '../../config/confirmEmail/index.js';
-import Payment from '../../model/payment/index.js';  
 import Stripe from 'stripe'; // Import the Stripe module
 const stripeClient= Stripe(process.env.STRIPE_KEY); 
 import Host from '../../model/hostModel/index.js'
-import Booking from '../../model/confirmBooking/index.js'
 
 export const bookingController = {
 
@@ -134,8 +132,6 @@ deleteBooking: async (req, res) => {
   }
 },
 
-
-
 getTemporaryBookings: async (req, res) => {
   try {
     const listings = await Listing.find({ hostId: req.user._id }).select('_id');
@@ -177,24 +173,20 @@ getTemporaryBookings: async (req, res) => {
   }
 },
 
-
-
-  getConfirmedBookings: async (req, res) => {
+getConfirmedBookings: async (req, res) => {
     try {
       console.log("req user",req.user)
       const listings = await Listing.find({ hostId: req.user._id })
       const listingIds = listings.map((listing) => listing._id);
       const bookings = await ConfirmedBooking.find({ listingId: { $in: listingIds } }).populate('listingId');
     
-
-    
       res.status(200).json({ bookings });
     } catch (error) {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
-  },
+},
 
-  getBookingsCheckingOutToday: async (req, res) => {
+getBookingsCheckingOutToday: async (req, res) => {
     try {
         const today = new Date();
         today.setUTCHours(0, 0, 0, 0);
@@ -276,7 +268,6 @@ getCurrentlyHostingBookings: async (req, res) => {
   }
 },
 
-
 getUpcomingBookings: async (req, res) => {
   try {
     const today = new Date();
@@ -318,8 +309,6 @@ getUpcomingBookings: async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error', error: error.message });
   }
 },
-
-
 
 getUserBookings: async (req, res) => {
   try {
@@ -385,37 +374,6 @@ getUserBookings: async (req, res) => {
   }
 },
 
-// getConfirmedBookingDates:async(req,res)=>{
-//   try {
-//     const hostId = req.user.id;
-
-//     const listings = await Listing.find({ hostId }).select('_id');  
-//     const listingIds = listings.map((listing) => listing._id);
-
-//     if (listingIds.length === 0) {
-//       return res.status(200).json({ message: "No listings found for this host.", bookingDates: [] });
-//     }
-
-//     const confirmedBookings = await ConfirmedBooking.find({
-//       listingId: { $in: listingIds },
-//     }).select('startDate endDate listingId');  
-
-//     const bookingDates = confirmedBookings.map((booking) => ({
-//       listingId: booking.listingId,
-      
-//       startDate: booking.startDate,
-//       endDate: booking.endDate,
-//     }));
-
-//     if (bookingDates.length === 0) {
-//       return res.status(200).json({ message: "No confirmed bookings found for this host.", bookingDates: [] });
-//     }
-//     res.status(200).json({ bookingDates });
-//   } catch (error) {
-//     console.error('Error fetching confirmed bookings:', error);
-//     res.status(500).json({ message: 'Internal Server Error', error: error.message });
-//   }
-// }
 getConfirmedBookingDates: async (req, res) => {
   try {
     const hostId = req.user.id;
@@ -431,7 +389,7 @@ getConfirmedBookingDates: async (req, res) => {
       listingId: { $in: listingIds },
     })
       .select('startDate endDate listingId userId guestCapacity totalPrice')
-      .populate('userId', 'userName email photoProfile phoneNumber'); // Ensure 'User' model is defined and ref matches
+      .populate('userId', 'userName email photoProfile phoneNumber'); 
 
     const bookingDates = confirmedBookings.map((booking) => ({
       listingId: booking.listingId,
@@ -459,9 +417,6 @@ getConfirmedBookingDates: async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error', error: error.message });
   }
 }
-
-
-
 
   
 };

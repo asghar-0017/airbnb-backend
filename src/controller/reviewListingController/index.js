@@ -58,7 +58,6 @@ export const reviewListingController = {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
-
   getReviewsByListingId: async (req, res) => {
     try {
       const { listingId } = req.params;

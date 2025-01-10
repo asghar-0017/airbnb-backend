@@ -3,9 +3,7 @@ import generateResetCode from '../../mediater/generateResetCode/index.js';
 import sendResetEmail from '../../mediater/sendReserEmail/index.js';
 import dotenv from 'dotenv';
 
-
 dotenv.config();
-
 const adminAuth = {
   login: async (req, res) => {
     try {
@@ -20,7 +18,6 @@ const adminAuth = {
       res.status(500).send({ message: 'Internal Server Error', error: error.message });
     }
   },
-
   logout: async (req, res) => {
     try {
       const authHeader = req.headers.authorization;
@@ -38,7 +35,6 @@ const adminAuth = {
       res.status(500).send({ message: 'Internal Server Error', error: error.message });
     }
   },
-  
   forgotPassword: async (req, res) => {
     try {
       const { email } = req.body;
@@ -55,7 +51,6 @@ const adminAuth = {
       res.status(500).send({ message: 'Internal Server Error', error: error.message });
     }
   },
-
   verifyResetCode: async (req, res) => {
     try {
       const { code } = req.body;
@@ -70,7 +65,6 @@ const adminAuth = {
       res.status(500).send({ message: 'Internal Server Error', error: error.message });
     }
   },
-
   resetPassword: async (req, res) => {
     try {
       const { password } = req.body;
@@ -86,7 +80,6 @@ const adminAuth = {
       res.status(500).send({ message: 'Internal Server Error', error: error.message });
     }
   },
-
   verifyToken: async (req, res) => {
     try {
         console.log("Api ht")

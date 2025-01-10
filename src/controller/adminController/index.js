@@ -28,29 +28,6 @@ export const adminController = {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
-
-  // confirmListing: async (req, res) => {
-  //   try {
-  //     const listingId = req.params.listingId;
-  //     console.log("listingId",listingId)
-
-  //     const temporaryListingData = await TemporaryListing.findById(listingId);
-  //     if (!temporaryListingData) {
-  //       return res.status(404).json({ message: 'Temporary listing not found.' });
-  //     }
-
-  //     const confirmedListing = new ListingModel(temporaryListingData.toObject());
-  //     await confirmedListing.save();
-
-  //     await TemporaryListing.findByIdAndDelete(listingId);
-
-  //     res.status(200).json({ message: 'Listing confirmed successfully.' });
-  //   } catch (error) {
-  //     console.error('Error confirming listing:', error);
-  //     res.status(500).json({ message: 'Internal Server Error', error: error.message });
-  //   }
-  // },
-
   confirmListing: async (req, res) => {
     try {
       const listingId = req.params.listingId;
@@ -79,7 +56,6 @@ export const adminController = {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
-  
   getPendingCNICVerifications:async(req,res)=>{
     try {
       const pendingHosts = await Host.find({
@@ -100,7 +76,6 @@ export const adminController = {
       res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
   },
-   
   verifyCNIC:async (req, res) => {
     try {
       const { hostId } = req.params;

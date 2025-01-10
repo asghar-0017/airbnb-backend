@@ -68,9 +68,6 @@ export const listingController = {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
-
-  
-
   getListingsByHostId: async (req, res) => {
     try {
       const hostId = req.params.hostId;
@@ -97,46 +94,6 @@ export const listingController = {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
-  
-
-  // getListingById: async (req, res) => {
-  //   try {
-  //     const id = req.params.id;
-  //     const listing = await Listing.findById(id).populate('confirmedBookings');
-  //     if (!listing) {
-  //       return res.status(404).json({ message: 'Listing not found' });
-  //     }
-    
-  //     const hostData = await Host.findById(listing.hostId);
-    
-  //     const hostSelectedData = {
-  //       userName: hostData?.userName,
-  //       email: hostData?.email,
-  //       photoProfile: hostData?.photoProfile,
-  //       CNICStatus:hostData.CNIC.isVerified
-
-  //     };
-    
-  //     res.status(200).json({
-  //       message: 'Listing fetched successfully',
-  //       hostData: hostSelectedData,
-  //       listing: {
-  //         ...listing.toObject(),
-  //         bookings: listing.confirmedBookings.map(booking => ({
-  //           userId: booking.userId,
-  //           startDate: booking.startDate,
-  //           endDate: booking.endDate,
-  //           totalPrice: booking.totalPrice,
-  //           bookingDate: booking.createdAt, 
-  //         })),
-  //       },
-  //     });
-  //   } catch (error) {
-  //     console.error('Error fetching listing:', error);
-  //     res.status(500).json({ message: 'Internal Server Error', error: error.message });
-  //   }
-  // },
-  
   getListingById: async (req, res) => {
     try {
       const id = req.params.id;
@@ -193,40 +150,6 @@ export const listingController = {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
-  getAllListings: async (req, res) => {
-    try {
-      const loggedInUserId = req.query.userId; 
-      let listings;
-  
-      if (loggedInUserId) {
-        listings = await Listing.find({ hostId: { $ne: loggedInUserId } })
-          .populate('hostId', 'userName email photoProfile'); 
-      } else {
-        listings = await Listing.find()
-          .populate('hostId', 'userName email photoProfile'); 
-      }
-  
-      if (!listings.length) {
-        return res.status(404).json({ message: 'No listings found.' });
-      }
-  
-      const transformedListings = listings.map(listing => {
-        const host = listing.hostId; 
-        const listingObject = listing.toObject();
-        listingObject.hostData = host;
-        delete listingObject.hostId; 
-        return listingObject;
-      });
-  
-      res.status(200).json({ message: 'Listings fetched successfully.', listings: transformedListings });
-    } catch (error) {
-      console.error('Error fetching listings:', error);
-      res.status(500).json({ message: 'Internal Server Error', error: error.message });
-    }
-  },
-  
-  
-
   updateListing: async (req, res) => {
     try {
       const listingId = req.params.id;
@@ -258,7 +181,6 @@ export const listingController = {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
-  
   deleteListing: async (req, res) => {
     try {
       const listingId = req.params.id;
@@ -275,7 +197,43 @@ export const listingController = {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
-
+  getAllListings: async (req, res) => {
+    try {
+      const loggedInUserId = req.query.userId; 
+      let listings;
+        if (loggedInUserId) {
+        listings = await Listing.find({ hostId: { $ne: loggedInUserId } })
+          .populate('hostId', 'userName email photoProfile');
+      } else {
+        listings = await Listing.find()
+          .populate('hostId', 'userName email photoProfile');
+      }
+      if (!listings.length) {
+        return res.status(404).json({ message: 'No listings found.' });
+      }
+        const transformedListings = await Promise.all(
+        listings.map(async (listing) => {
+        const host = listing.hostId;
+        const reviews = await Review.find({ listingId: listing._id });
+          let averageRating = 0;
+          if (reviews.length > 0) {
+            const totalRatings = reviews.reduce((sum, review) => sum + review.rating, 0);
+            averageRating = (totalRatings / reviews.length).toFixed(1); 
+          }
+          const listingObject = listing.toObject();
+          listingObject.hostData = host;
+          listingObject.averageRating = averageRating; 
+          delete listingObject.hostId;
+          return listingObject;
+        })
+      );
+  
+      res.status(200).json({ message: 'Listings fetched successfully.', listings: transformedListings });
+    } catch (error) {
+      console.error('Error fetching listings:', error);
+      res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    }
+  },
 
 };
 
