@@ -9,39 +9,31 @@ export const reviewListingController = {
       const { rating, comment } = req.body;
       const userId = req.user._id;
 
-      console.log('Adding review for listing:', listingId, 'by user:', userId);
-
-      // Validate rating
       if (!rating || isNaN(rating) || rating < 1 || rating > 5) {
         console.log('Invalid rating:', rating);
         return res.status(400).json({ message: 'Rating must be a number between 1 and 5.' });
       }
-
-      // Validate comment
       if (!comment || comment.trim().length === 0) {
         console.log('Comment is missing or empty');
         return res.status(400).json({ message: 'Comment is required.' });
       }
 
-      // Check if the listing exists
       const listing = await Listing.findById(listingId);
       if (!listing) {
         console.log('Listing not found:', listingId);
         return res.status(404).json({ message: 'Listing not found.' });
       }
 
-      // Prevent reviewing own listing
       if (String(listing.hostId) === String(userId)) {
         console.log('User attempted to review their own listing');
         return res.status(403).json({ message: 'You cannot review your own listing.' });
       }
 
-      // Check if the user has a valid booking for this listing that has ended
       const today = new Date();
       const booking = await ConfirmedBooking.findOne({
         userId,
         listingId,
-        endDate: { $lte: today }, // Corrected MongoDB operator
+        endDate: { $lte: today }, 
       });
 
       if (!booking) {
@@ -50,8 +42,6 @@ export const reviewListingController = {
           message: 'You can only review listings you have booked and checked out of.',
         });
       }
-
-      // Create and save the review
       const review = new Review({
         hostId: userId,
         listingId,
@@ -73,9 +63,6 @@ export const reviewListingController = {
     try {
       const { listingId } = req.params;
 
-      console.log('Fetching reviews for listing:', listingId);
-
-      // Fetch reviews for the listing
       const reviews = await Review.find({ listingId }).populate(
         'hostId',
         'userName email photoProfile'
@@ -85,12 +72,8 @@ export const reviewListingController = {
         console.log('No reviews found for listing:', listingId);
         return res.status(404).json({ message: 'No reviews found for this listing.' });
       }
-
-      // Calculate the average rating
       const totalRatings = reviews.reduce((sum, review) => sum + review.rating, 0);
       const averageRating = (totalRatings / reviews.length).toFixed(1);
-
-      console.log('Reviews fetched successfully for listing:', listingId);
 
       res.status(200).json({
         message: 'Reviews fetched successfully.',

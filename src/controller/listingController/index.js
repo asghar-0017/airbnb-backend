@@ -2,6 +2,7 @@ import listingModel from '../../model/listingModel/index.js';
 import Listing from '../../model/listingModel/index.js';
 import temporaryListingSchema from '../../model/temporaryLIsting/index.js';
 import Host from '../../model/hostModel/index.js'
+import Review from '../../model/reviewListings/index.js'; 
 
 export const listingController = {
 
@@ -98,25 +99,80 @@ export const listingController = {
   },
   
 
+  // getListingById: async (req, res) => {
+  //   try {
+  //     const id = req.params.id;
+  //     const listing = await Listing.findById(id).populate('confirmedBookings');
+  //     if (!listing) {
+  //       return res.status(404).json({ message: 'Listing not found' });
+  //     }
+    
+  //     const hostData = await Host.findById(listing.hostId);
+    
+  //     const hostSelectedData = {
+  //       userName: hostData?.userName,
+  //       email: hostData?.email,
+  //       photoProfile: hostData?.photoProfile,
+  //       CNICStatus:hostData.CNIC.isVerified
+
+  //     };
+    
+  //     res.status(200).json({
+  //       message: 'Listing fetched successfully',
+  //       hostData: hostSelectedData,
+  //       listing: {
+  //         ...listing.toObject(),
+  //         bookings: listing.confirmedBookings.map(booking => ({
+  //           userId: booking.userId,
+  //           startDate: booking.startDate,
+  //           endDate: booking.endDate,
+  //           totalPrice: booking.totalPrice,
+  //           bookingDate: booking.createdAt, 
+  //         })),
+  //       },
+  //     });
+  //   } catch (error) {
+  //     console.error('Error fetching listing:', error);
+  //     res.status(500).json({ message: 'Internal Server Error', error: error.message });
+  //   }
+  // },
+  
   getListingById: async (req, res) => {
     try {
       const id = req.params.id;
-      const listing = await Listing.findById(id).populate('confirmedBookings');
+        const listing = await Listing.findById(id).populate('confirmedBookings');
       if (!listing) {
         return res.status(404).json({ message: 'Listing not found' });
       }
-    
-      const hostData = await Host.findById(listing.hostId);
-    
+        const hostData = await Host.findById(listing.hostId);
       const hostSelectedData = {
         userName: hostData?.userName,
         email: hostData?.email,
         photoProfile: hostData?.photoProfile,
-        CNICStatus:hostData.CNIC.isVerified
-
+        CNICStatus: hostData?.CNIC?.isVerified
       };
-    
-      res.status(200).json({
+        const reviews = await Review.find({ listingId: listing._id }).populate(
+        'hostId',
+        'userName email photoProfile'
+      );
+        let averageRating = 0;
+      if (reviews.length > 0) {
+        const totalRatings = reviews.reduce((sum, review) => sum + review.rating, 0);
+        averageRating = (totalRatings / reviews.length).toFixed(1);  
+      } else {
+        averageRating = 0; 
+      }
+        const reviewData = reviews.map(review => ({
+        _id: review._id,
+        rating: review.rating,
+        comment: review.comment,
+        hostId: {
+          userName: review.hostId?.userName,
+          email: review.hostId?.email,
+          photoProfile: review.hostId?.photoProfile
+        }
+      }));
+        res.status(200).json({
         message: 'Listing fetched successfully',
         hostData: hostSelectedData,
         listing: {
@@ -126,8 +182,10 @@ export const listingController = {
             startDate: booking.startDate,
             endDate: booking.endDate,
             totalPrice: booking.totalPrice,
-            bookingDate: booking.createdAt, 
+            bookingDate: booking.createdAt
           })),
+          reviews: reviewData,  
+          averageRating: averageRating  
         },
       });
     } catch (error) {
@@ -135,8 +193,6 @@ export const listingController = {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
-  
-  
   getAllListings: async (req, res) => {
     try {
       const loggedInUserId = req.query.userId; 
