@@ -385,7 +385,38 @@ getUserBookings: async (req, res) => {
   }
 },
 
-getConfirmedBookingDates:async(req,res)=>{
+// getConfirmedBookingDates:async(req,res)=>{
+//   try {
+//     const hostId = req.user.id;
+
+//     const listings = await Listing.find({ hostId }).select('_id');  
+//     const listingIds = listings.map((listing) => listing._id);
+
+//     if (listingIds.length === 0) {
+//       return res.status(200).json({ message: "No listings found for this host.", bookingDates: [] });
+//     }
+
+//     const confirmedBookings = await ConfirmedBooking.find({
+//       listingId: { $in: listingIds },
+//     }).select('startDate endDate listingId');  
+
+//     const bookingDates = confirmedBookings.map((booking) => ({
+//       listingId: booking.listingId,
+      
+//       startDate: booking.startDate,
+//       endDate: booking.endDate,
+//     }));
+
+//     if (bookingDates.length === 0) {
+//       return res.status(200).json({ message: "No confirmed bookings found for this host.", bookingDates: [] });
+//     }
+//     res.status(200).json({ bookingDates });
+//   } catch (error) {
+//     console.error('Error fetching confirmed bookings:', error);
+//     res.status(500).json({ message: 'Internal Server Error', error: error.message });
+//   }
+// }
+getConfirmedBookingDates: async (req, res) => {
   try {
     const hostId = req.user.id;
 
@@ -398,24 +429,40 @@ getConfirmedBookingDates:async(req,res)=>{
 
     const confirmedBookings = await ConfirmedBooking.find({
       listingId: { $in: listingIds },
-    }).select('startDate endDate listingId');  
+    })
+      .select('startDate endDate listingId userId guestCapacity totalPrice')
+      .populate('userId', 'userName email photoProfile phoneNumber'); // Ensure 'User' model is defined and ref matches
 
     const bookingDates = confirmedBookings.map((booking) => ({
       listingId: booking.listingId,
       startDate: booking.startDate,
       endDate: booking.endDate,
+      guestCapacity: booking.guestCapacity,
+      totalPrice: booking.totalPrice,
+      guestData: booking.userId
+        ? {
+            name: booking.userId.userName,
+            email: booking.userId.email,
+            photoProfile: booking.userId.photoProfile,
+            phoneNumber: booking.userId.phoneNumber,
+          }
+        : null,
     }));
 
     if (bookingDates.length === 0) {
       return res.status(200).json({ message: "No confirmed bookings found for this host.", bookingDates: [] });
     }
+
     res.status(200).json({ bookingDates });
   } catch (error) {
     console.error('Error fetching confirmed bookings:', error);
     res.status(500).json({ message: 'Internal Server Error', error: error.message });
   }
 }
-     
+
+
+
+
   
 };
 
