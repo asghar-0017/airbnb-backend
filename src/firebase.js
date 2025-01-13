@@ -22,4 +22,4 @@ admin.initializeApp({
 
 const database = admin.database();
 
-export { admin, database };
+export { admin, database }
