@@ -197,7 +197,6 @@ export const listingController = {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
-  
   getAllListings: async (req, res) => {
     try {
         const { userId: loggedInUserId, page , limit } = req.query; 

@@ -6,6 +6,7 @@ import ConnectDB from './dbConnector/index.js';
 import config from './config/index.js';
 import allRoutes from './routes/allRoutes/index.js';
 import session from 'express-session'
+import rateLimit from 'express-rate-limit';
 
 
 dotenv.config();
@@ -20,7 +21,14 @@ app.use(session({
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-  }));
+}));
+export const limiter = rateLimit({
+    windowMs: 1 * 60 * 1000,
+    max: 5, 
+    message: { error: 'You have exceeded the maximum number of requests. Please try again later.' }, 
+    standardHeaders: true, 
+    legacyHeaders: false, 
+});
 
 
 allRoutes(app);
