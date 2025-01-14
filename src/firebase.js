@@ -16,7 +16,7 @@ const service = {
 
 admin.initializeApp({
   credential: admin.credential.cert(service),
-  databaseURL: 'https://airbnb-4f322-default-rtdb.firebaseio.com',
+  databaseURL: process.env.FIREBASE_DATABASE,
 });
 
 const database = admin.database();
