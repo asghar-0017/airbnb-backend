@@ -197,43 +197,59 @@ export const listingController = {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
+  
   getAllListings: async (req, res) => {
     try {
-      const loggedInUserId = req.query.userId; 
-      let listings;
-        if (loggedInUserId) {
-        listings = await Listing.find({ hostId: { $ne: loggedInUserId } })
-          .populate('hostId', 'userName email photoProfile');
-      } else {
-        listings = await Listing.find()
-          .populate('hostId', 'userName email photoProfile');
-      }
-      if (!listings.length) {
-        return res.status(404).json({ message: 'No listings found.' });
-      }
+        const { userId: loggedInUserId, page , limit } = req.query; 
+        const skip = (page - 1) * limit; 
+
+        const query = loggedInUserId 
+            ? { hostId: { $ne: loggedInUserId } } 
+            : {};
+
+        const listings = await Listing.find(query)
+            .populate('hostId', 'userName email photoProfile')
+            .skip(skip)
+            .limit(parseInt(limit)); 
+
+        if (!listings.length) {
+            return res.status(404).json({ message: 'No listings found.' });
+        }
         const transformedListings = await Promise.all(
-        listings.map(async (listing) => {
-        const host = listing.hostId;
-        const reviews = await Review.find({ listingId: listing._id });
-          let averageRating = 0;
-          if (reviews.length > 0) {
-            const totalRatings = reviews.reduce((sum, review) => sum + review.rating, 0);
-            averageRating = (totalRatings / reviews.length).toFixed(1); 
-          }
-          const listingObject = listing.toObject();
-          listingObject.hostData = host;
-          listingObject.averageRating = averageRating; 
-          delete listingObject.hostId;
-          return listingObject;
-        })
-      );
-  
-      res.status(200).json({ message: 'Listings fetched successfully.', listings: transformedListings });
+            listings.map(async (listing) => {
+                const host = listing.hostId;
+                const reviews = await Review.find({ listingId: listing._id });
+
+                let averageRating = 0;
+                if (reviews.length > 0) {
+                    const totalRatings = reviews.reduce((sum, review) => sum + review.rating, 0);
+                    averageRating = (totalRatings / reviews.length).toFixed(1);
+                }
+
+                const listingObject = listing.toObject();
+                listingObject.hostData = host;
+                listingObject.averageRating = averageRating;
+                delete listingObject.hostId;
+
+                return listingObject;
+            })
+        );
+        const totalListings = await Listing.countDocuments(query);
+
+        res.status(200).json({
+            message: 'Listings fetched successfully.',
+            listings: transformedListings,
+            pagination: {
+                currentPage: parseInt(page),
+                totalPages: Math.ceil(totalListings / limit),
+                totalListings,
+            },
+        });
     } catch (error) {
-      console.error('Error fetching listings:', error);
-      res.status(500).json({ message: 'Internal Server Error', error: error.message });
+        console.error('Error fetching listings:', error);
+        res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
-  },
+},
 
 };
 
