@@ -9,6 +9,7 @@ import session from 'express-session'
 import rateLimit from 'express-rate-limit';
 import initializeSocket from './socket.io/index.js';
 import http from 'http';
+import { Server } from 'socket.io';
 
 
 dotenv.config();
@@ -27,8 +28,15 @@ app.use(session({
 
 const server = http.createServer(app);
 initializeSocket(server);  
-// Pass io to the routes if needed
-app.set('io', server.io);
+
+const io = new Server(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST", "DELETE", "PUT"],
+  },
+  transports: ["websocket", "polling"],
+});
+
 
 export const limiter = rateLimit({
     windowMs: 1 * 60 * 1000,
@@ -39,7 +47,7 @@ export const limiter = rateLimit({
 });
 
 
-allRoutes(app);
+allRoutes(app,io);
 
 app.get('/', (req, res) => {
   res.send({ code: 200, message: 'Server is running successfully.' });
@@ -48,11 +56,11 @@ app.get('/', (req, res) => {
 const startServer = async () => {
   try {
     await ConnectDB(config.db, console);
-    console.log('✅ Database initialized.')
-    const PORT = process.env.PORT || 4000;
-    app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+    console.log(':white_check_mark: Database initialized.');
+    const PORT = process.env.PORT || 5000;
+    server.listen(PORT, () => console.log(`:rocket: Server running on port ${PORT}`));
   } catch (error) {
-    console.error('❌ Error during server initialization:', error.message);
+    console.error(':x: Error during server initialization:', error.message);
   }
 };
 

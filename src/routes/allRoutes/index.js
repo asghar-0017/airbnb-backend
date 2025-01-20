@@ -6,13 +6,13 @@ import AdminAuthRoute from '../adminAuthRoute/index.js'
 import AdminRoute from "../adminRoute/index.js"
 import chatController from "../chatRoute/index.js"
 
-const allRoutes=async(app)=>{
+const allRoutes=async(app,io)=>{
     authRoute(app)
     listingRoute(app)
     bookingRoute(app)
     reviewListingRoute(app)
     AdminAuthRoute(app)
     AdminRoute(app)
-    chatController(app)
+    chatController(app,io)
 }
 export default allRoutes

@@ -2,7 +2,7 @@ import Chat from '../../model/chatModel/index.js';
 import User from '../../model/hostModel/index.js';
 
 export const chatController = {
-  sendMessage: async (req, res) => {
+  sendMessage: async (io,req, res) => {
     const { guestId, message } = req.body;
     const hostId = req.user._id; 
   
@@ -24,7 +24,7 @@ export const chatController = {
       await chat.save();
 
  
-  
+      io.emit("send_message", chat);
       res.status(201).json({ message: 'Message sent successfully.', chat });
     } catch (error) {
       console.error('Error sending message:', error);
@@ -32,7 +32,7 @@ export const chatController = {
     }
   },
 
-  listSentMessages: async (req, res) => {
+  listSentMessages: async (io,req, res) => {
     const userId = req.user._id;
 
     try {
@@ -59,6 +59,8 @@ export const chatController = {
             })),
         };
       });
+      io.emit("receive_message", formattedMessages);
+
 
       res.status(200).json({ sentMessages: formattedMessages });
     } catch (error) {
@@ -67,7 +69,7 @@ export const chatController = {
     }
   },
 
-  getChat: async (req, res) => {
+  getChat: async (io,req, res) => {
     const userId = req.params.userId;
     const currentUserId = req.user._id;
 
@@ -80,6 +82,13 @@ export const chatController = {
         return res.status(404).json({ message: 'No chat found between the specified users.' });
       }
    
+      io.emit("receive_message",{chatId: chat._id,
+        host: chat.hostId,
+        guest: chat.guestId,
+        messages: chat.messages
+      }
+      );
+
 
       res.status(200).json({
         chatId: chat._id,

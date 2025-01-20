@@ -1,16 +1,10 @@
-import { Server } from 'socket.io';
 
-export default function initializeSocket(server) {
-  const io = new Server(server, {
-    cors: {
-      origin: '*', // Replace with your frontend URL in production
-    },
-  });
+export default function initializeSocket(io) {
+ 
 
   io.on('connection', (socket) => {
     console.log(`User connected: ${socket.id}`);
 
-    // Handle joining a room (chatId)
     socket.on('join_room', (chatId) => {
       if (!chatId) {
         console.error('join_room event received without a chatId');
@@ -20,7 +14,6 @@ export default function initializeSocket(server) {
       console.log(`User joined room: ${chatId}`);
     });
 
-    // Handle sending a message to a specific room (chatId)
     socket.on('send_message', ({ chatId, message, sender }) => {
       if (!chatId || !message || !sender) {
         console.error('send_message event received with missing fields');
@@ -34,7 +27,6 @@ export default function initializeSocket(server) {
       console.log(`Message sent in room ${chatId}:`, message);
     });
 
-    // Handle user disconnection
     socket.on('disconnect', () => {
       console.log(`User disconnected: ${socket.id}`);
     });
