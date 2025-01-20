@@ -7,6 +7,8 @@ import config from './config/index.js';
 import allRoutes from './routes/allRoutes/index.js';
 import session from 'express-session'
 import rateLimit from 'express-rate-limit';
+import initializeSocket from './socket.io/index.js';
+import http from 'http';
 
 
 dotenv.config();
@@ -22,6 +24,10 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
 }));
+
+const server = http.createServer(app);
+initializeSocket(server);
+
 export const limiter = rateLimit({
     windowMs: 1 * 60 * 1000,
     max: 5, 
