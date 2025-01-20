@@ -3,7 +3,8 @@ import { Server } from 'socket.io';
 export default function initializeSocket(server) {
   const io = new Server(server, {
     cors: {
-      origin: '*',
+      origin: 'http://locahost:5173', // Replace with the actual frontend URL
+      methods: ['GET', 'POST'],
     },
   });
 
