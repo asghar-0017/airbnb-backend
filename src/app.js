@@ -27,7 +27,8 @@ app.use(session({
 
 const server = http.createServer(app);
 initializeSocket(server);  
-
+// Pass io to the routes if needed
+app.set('io', server.io);
 
 export const limiter = rateLimit({
     windowMs: 1 * 60 * 1000,

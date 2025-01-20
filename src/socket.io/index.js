@@ -3,8 +3,7 @@ import { Server } from 'socket.io';
 export default function initializeSocket(server) {
   const io = new Server(server, {
     cors: {
-      origin: 'http://locahost:5173', // Replace with the actual frontend URL
-      methods: ['GET', 'POST'],
+      origin: '*', // Replace with the actual frontend URL
     },
   });
 
@@ -40,4 +39,7 @@ export default function initializeSocket(server) {
       console.log(`User disconnected: ${socket.id}`);
     });
   });
+
+  // Attach io to the app
+  server.io = io;
 }

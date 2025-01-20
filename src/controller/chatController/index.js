@@ -22,6 +22,13 @@ export const chatController = {
       }
       chat.messages.push({ senderId: hostId, message });
       await chat.save();
+
+    // Emit to the specific chat room
+    req.app.get('io').to(chat._id.toString()).emit('receive_message', {
+      message,
+      sender: hostId,
+      timestamp: new Date(),
+    });
   
       res.status(201).json({ message: 'Message sent successfully.', chat });
     } catch (error) {
@@ -77,6 +84,12 @@ export const chatController = {
       if (!chat) {
         return res.status(404).json({ message: 'No chat found between the specified users.' });
       }
+       // Emit to the specific chat room
+       req.app.get('io').to(chat._id.toString()).emit('receive_message', {
+        message: 'Chat retrieved',
+        sender: user1,
+        timestamp: new Date(),
+      });
 
       res.status(200).json({
         chatId: chat._id,
