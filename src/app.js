@@ -5,17 +5,16 @@ import passport from 'passport';
 import ConnectDB from './dbConnector/index.js';
 import config from './config/index.js';
 import allRoutes from './routes/allRoutes/index.js';
-import session from 'express-session'
+import session from 'express-session';
 import rateLimit from 'express-rate-limit';
-import initializeSocket from './socket.io/index.js';
 import http from 'http';
 import { Server } from 'socket.io';
-
+import initializeSocket from './socket.io/index.js';
 
 dotenv.config();
 
 const app = express();
-app.use(cors({ origin: '*' }));
+app.use(cors({ origin: '*' })); 
 app.use(express.json());
 
 app.use(passport.initialize());
@@ -27,27 +26,26 @@ app.use(session({
 }));
 
 const server = http.createServer(app);
-initializeSocket(server);  
 
 const io = new Server(server, {
   cors: {
-    origin: "*",
+    origin: "*", 
     methods: ["GET", "POST", "DELETE", "PUT"],
   },
   transports: ["websocket", "polling"],
 });
 
+initializeSocket(io); 
 
 export const limiter = rateLimit({
-    windowMs: 1 * 60 * 1000,
-    max: 5, 
-    message: { error: 'You have exceeded the maximum number of requests. Please try again later.' }, 
-    standardHeaders: true, 
-    legacyHeaders: false, 
+  windowMs: 1 * 60 * 1000,
+  max: 5, 
+  message: { error: 'You have exceeded the maximum number of requests. Please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
-
-allRoutes(app,io);
+allRoutes(app, io); 
 
 app.get('/', (req, res) => {
   res.send({ code: 200, message: 'Server is running successfully.' });

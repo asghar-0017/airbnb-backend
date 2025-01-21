@@ -1,35 +1,45 @@
-
 export default function initializeSocket(io) {
-  io.on('connection', (socket) => {
+  io.on("connection", (socket) => {
+    if (!socket.id) {
+      console.error("Socket ID is undefined! Connection failed.");
+      return;
+    }
+
     console.log(`User connected: ${socket.id}`);
-    socket.on('join_room', ({ hostId, guestId }) => {
-      if (!hostId || !guestId) {
-        console.error('join_room event received without hostId or guestId');
+
+    socket.on("join_room", (chatRoomId) => {
+      if (!chatRoomId) {
+        console.error("No chatRoomId provided for join_room.");
         return;
       }
-      const roomId = [hostId, guestId].sort().join('_');
-      socket.join(roomId);
-      console.log(`User joined room: ${roomId}`);
+
+      socket.join(chatRoomId);
+      console.log(`Socket ID ${socket.id} joined room: ${chatRoomId}`);
     });
 
-    socket.on('send_message', ({ message, sender, hostId, guestId }) => {
-      if (!message || !sender || !hostId || !guestId) {
-        console.error('send_message event received with missing fields');
+    socket.on("send_message", ({ senderId, receiverId, message }) => {
+      if (!senderId || !receiverId || !message) {
+        console.error("send_message received with missing fields.");
         return;
       }
 
-      const roomId = [hostId, guestId].sort().join('_');
-      
-      io.to(roomId).emit('receive_message', {
+      const chatRoomId = `${senderId}_${receiverId}`;
+      console.log(`Message received for room: ${chatRoomId}`);
+
+      io.to(chatRoomId).emit("receive_message", {
+        senderId,
         message,
-        sender,
         timestamp: new Date(),
       });
 
-      console.log(`Message sent in room ${roomId}:`, message);
+      console.log(`Message emitted to room ${chatRoomId}:`, {
+        senderId,
+        message,
+        timestamp: new Date(),
+      });
     });
 
-    socket.on('disconnect', () => {
+    socket.on("disconnect", () => {
       console.log(`User disconnected: ${socket.id}`);
     });
   });
