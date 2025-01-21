@@ -107,4 +107,44 @@ export const chatController = {
       res.status(500).json({ message: 'Internal Server Error' });
     }
   },
+  listHostMessages: async (io, req, res) => {
+    const guestId = req.user._id; 
+    try {
+      const guestData = await User.findById(guestId).select('userName email photoProfile');
+      if (!guestData) {
+        return res.status(404).json({ message: 'Guest not found.' });
+      }
+      const chats = await Chat.find({ guestId }).populate({
+        path: 'hostId',
+        model: 'Host', 
+        select: 'userName email photoProfile',
+      });
+
+      if (!chats || chats.length === 0) {
+        return res.status(404).json({ message: 'No messages found for this guest.' });
+      }
+      const hostMessages = chats.map(chat => ({
+        hostId: chat.hostId._id,
+        hostName: chat.hostId.userName,
+        hostEmail: chat.hostId.email,
+        hostPhotoProfile: chat.hostId.photoProfile,
+      }));
+
+      const response = {
+        guest: {
+          guestId: guestData._id,
+          guestName: guestData.userName,
+          guestEmail: guestData.email,
+          guestPhotoProfile: guestData.photoProfile,
+        },
+        hosts: hostMessages,
+      };
+
+      io.emit('host_messages', response); 
+      res.status(200).json(response);
+    } catch (error) {
+      console.error('Error listing host messages:', error.message);
+      res.status(500).json({ message: 'Internal Server Error' });
+    }
+  },
 };

@@ -5,7 +5,7 @@ export default function initializeSocket(io) {
       return;
     }
 
-    console.log(`User connected: ${socket.id}`);
+    console.log(`User connected: ${socket.id}`); 
 
     socket.on("join_room", (chatRoomId) => {
       if (!chatRoomId) {
