@@ -56,11 +56,11 @@ app.get('/', (req, res) => {
 const startServer = async () => {
   try {
     await ConnectDB(config.db, console);
-    console.log(':white_check_mark: Database initialized.');
+    console.log('Database initialized.');
     const PORT = process.env.PORT || 5000;
-    server.listen(PORT, () => console.log(`:rocket: Server running on port ${PORT}`));
+    server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   } catch (error) {
-    console.error(':x: Error during server initialization:', error.message);
+    console.error('Error during server initialization:', error.message);
   }
 };
 
