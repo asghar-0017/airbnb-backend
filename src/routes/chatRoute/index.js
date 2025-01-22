@@ -8,7 +8,7 @@ const chatRoute = (app,io) => {
   app.get('/list-guest-messages', combinedAuthenticate, (req, res) => chatController.listSentMessages(io, req, res)); 
   app.get('/list-host-messages', combinedAuthenticate, (req, res) => chatController.listHostMessages(io, req, res)); 
   app.get('/list-users-for-messages', combinedAuthenticate, (req, res) =>
-    chatController.listUsersForMessages(io, req, res)
+    chatController.listUserMessages(io, req, res)
   ); 
   
 };
