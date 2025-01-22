@@ -76,7 +76,7 @@ export const adminController = {
       res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
   },
-  verifyCNIC:async (req, res) => {
+  verifyCNIC:async (io,req, res) => {
     try {
       const { hostId } = req.params;
   
@@ -90,7 +90,8 @@ export const adminController = {
       }
         host.CNIC.isVerified = true;
       await host.save();
-  
+      io.emit('send_message', host);
+
       res.status(200).json({
         message: "CNIC verified successfully.",
         host: {

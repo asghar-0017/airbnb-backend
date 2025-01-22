@@ -12,7 +12,7 @@ const allRoutes=async(app,io)=>{
     bookingRoute(app)
     reviewListingRoute(app)
     AdminAuthRoute(app)
-    AdminRoute(app)
+    AdminRoute(app,io)
     chatController(app,io)
 }
 export default allRoutes
