@@ -7,5 +7,9 @@ const chatRoute = (app,io) => {
   app.get('/get-chat/:userId', combinedAuthenticate, (req, res) => chatController.getChat(io, req, res)); 
   app.get('/list-guest-messages', combinedAuthenticate, (req, res) => chatController.listSentMessages(io, req, res)); 
   app.get('/list-host-messages', combinedAuthenticate, (req, res) => chatController.listHostMessages(io, req, res)); 
+  app.get('/list-users-for-messages', combinedAuthenticate, (req, res) =>
+    chatController.listUsersForMessages(io, req, res)
+  ); 
+  
 };
 export default chatRoute;
