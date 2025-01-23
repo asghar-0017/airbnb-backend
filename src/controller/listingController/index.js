@@ -3,6 +3,7 @@ import Listing from '../../model/listingModel/index.js';
 import temporaryListingSchema from '../../model/temporaryLIsting/index.js';
 import Host from '../../model/hostModel/index.js'
 import Review from '../../model/reviewListings/index.js'; 
+import Notification from '../../model/notification/index.js';
 
 export const listingController = {
 

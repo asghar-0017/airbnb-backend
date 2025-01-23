@@ -12,6 +12,7 @@ export default function initializeSocket(io) {
         console.error("No chatRoomId provided for join_room.");
         return;
       }
+      
 
       socket.join(chatRoomId);
       console.log(`Socket ID ${socket.id} joined room: ${chatRoomId}`);

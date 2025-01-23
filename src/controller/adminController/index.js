@@ -1,7 +1,12 @@
 import TemporaryListing from "../../model/temporaryLIsting/index.js";
 import ListingModel from '../../model/listingModel/index.js'
 import Host from '../../model/hostModel/index.js'
+import Notification from "../../model/notification/index.js";
+import { notificationController } from "../notificationController/index.js";
 export const adminController = {
+ 
+
+  
   getAllListings: async (io,req, res) => {
     try {
       let listings;
@@ -51,10 +56,22 @@ export const adminController = {
       await confirmedListing.save();
         await TemporaryListing.findByIdAndDelete(listingId);
   
-      io.to(hostData._id.toString()).emit('send_message', {
-        message: "Your listing has been approved.",
-        listingId: confirmedListing._id,
-      });
+
+        const notification = await notificationController.createNotification({
+          userId: hostData._id,
+          message: 'Your listing has been approved!',
+          listingId: confirmedListing._id,
+          type: 'listing',
+        });
+
+
+
+        io.to(hostData._id.toString()).emit('listing_approved', {
+          message: notification.message,
+          notificationId: notification._id,
+          listingId: notification.listingId,
+          createdAt: notification.createdAt,
+        });
 
       res.status(200).json({ message: 'Listing confirmed successfully.', confirmedListing });
     } catch (error) {
