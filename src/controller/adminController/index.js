@@ -2,7 +2,7 @@ import TemporaryListing from "../../model/temporaryLIsting/index.js";
 import ListingModel from '../../model/listingModel/index.js'
 import Host from '../../model/hostModel/index.js'
 export const adminController = {
-  getAllListings: async (req, res) => {
+  getAllListings: async (io,req, res) => {
     try {
       let listings;
 
@@ -21,6 +21,7 @@ export const adminController = {
         delete listingObject.hostId; 
         return listingObject;
       });
+      io.emit('receive_message', transformedListings);
 
       res.status(200).json({ message: 'Listings fetched successfully.', listings: transformedListings });
     } catch (error) {
@@ -28,7 +29,7 @@ export const adminController = {
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
-  confirmListing: async (req, res) => {
+  confirmListing: async (io,req, res) => {
     try {
       const listingId = req.params.listingId;
       console.log("listingId",listingId)
@@ -50,13 +51,18 @@ export const adminController = {
       await confirmedListing.save();
         await TemporaryListing.findByIdAndDelete(listingId);
   
+      io.to(hostData._id.toString()).emit('listing_approved', {
+        message: "Your listing has been approved.",
+        listingId: confirmedListing._id,
+      });
+
       res.status(200).json({ message: 'Listing confirmed successfully.', confirmedListing });
     } catch (error) {
       console.error('Error confirming listing:', error);
       res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
   },
-  getPendingCNICVerifications:async(req,res)=>{
+  getPendingCNICVerifications:async(io,req,res)=>{
     try {
       const pendingHosts = await Host.find({
         "CNIC.isVerified": false,
@@ -66,6 +72,8 @@ export const adminController = {
       if (!pendingHosts.length) {
         return res.status(200).json({ message: "No pending CNIC verifications." });
       }
+      io.emit('receive_message', pendingHosts);
+
   
       res.status(200).json({
         message: "Pending CNIC verifications fetched successfully.",
@@ -90,7 +98,15 @@ export const adminController = {
       }
         host.CNIC.isVerified = true;
       await host.save();
-      io.emit('send_message', host);
+
+      io.to(hostId).emit('cnic_verified', {
+        message: 'Your CNIC has been successfully verified.',
+        host: {
+          userName: host.userName,
+          email: host.email,
+          cnicStatus: 'Verified',
+        },
+      });
 
       res.status(200).json({
         message: "CNIC verified successfully.",
@@ -105,10 +121,12 @@ export const adminController = {
       res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
   },
-  getTemporaryListing: async (req, res) => {
+  getTemporaryListing: async (io,req, res) => {
     try {
       const listingId = req.params.listingId; 
       const data = await TemporaryListing.findById(listingId);
+      io.emit('receive_message', data);
+
       if (data) {
         return res.status(200).send({ message: "Listing fetched successfully", data: data });
       } 
