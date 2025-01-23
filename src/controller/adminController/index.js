@@ -51,7 +51,7 @@ export const adminController = {
       await confirmedListing.save();
         await TemporaryListing.findByIdAndDelete(listingId);
   
-      io.to(hostData._id.toString()).emit('listing_approved', {
+      io.to(hostData._id.toString()).emit('send_message', {
         message: "Your listing has been approved.",
         listingId: confirmedListing._id,
       });
@@ -99,7 +99,7 @@ export const adminController = {
         host.CNIC.isVerified = true;
       await host.save();
 
-      io.to(hostId).emit('cnic_verified', {
+      io.to(hostId).emit('send_message', {
         message: 'Your CNIC has been successfully verified.',
         host: {
           userName: host.userName,
