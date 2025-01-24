@@ -48,7 +48,7 @@ export const notificationController = {
     }
   },
 
-  markAsRead: async (req, res) => {
+markAsRead: async (req, res) => {
     try {
       const notificationId = req.params.notificationId;
       const notification = await Notification.findById(notificationId);
