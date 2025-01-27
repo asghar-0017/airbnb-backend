@@ -30,7 +30,7 @@ export const notificationController = {
         .select('message isRead createdAt type listingId');
 
         if (io) {
-          io.to(userId.toString()).emit('get_notifications', notifications);
+          io.emit('get_notifications', notifications);
           console.log('Emitting notifications to user:', notifications);
         }
 
