@@ -1,25 +1,35 @@
 import Notification from '../../model/notification/index.js';
 
 export const notificationController = {
-
-
-    createNotification: async (data) => {
-        try {
-          const notification = new Notification(data);
-          return await notification.save();
-        } catch (error) {
-          console.error('Error creating notification:', error.message);
-          throw new Error('Failed to create notification.');
-        }
-      },
-
-
-  getNotifications: async (req, res) => {
+  createNotification: async (data, io) => {
     try {
-      const userId = req.user.id; 
+      const notification = new Notification(data);
+      const savedNotification = await notification.save();
+
+      if (io && data.userId) {
+        io.to(data.userId.toString()).emit('new_notification', {
+          message: savedNotification.message,
+          notificationId: savedNotification._id,
+          type: savedNotification.type,
+          createdAt: savedNotification.createdAt,
+        });
+      }
+
+      return savedNotification;
+    } catch (error) {
+      console.error('Error creating notification:', error.message);
+      throw new Error('Failed to create notification.');
+    }
+  },
+
+  getNotifications: async (io, req, res) => {
+    try {
+      const userId = req.user.id;
       const notifications = await Notification.find({ userId })
-        .sort({ createdAt: -1 }) // Most recent first
-        .select('message isRead createdAt type listingId'); 
+        .sort({ createdAt: -1 })
+        .select('message isRead createdAt type listingId');
+
+        io.emit('get-notification',notifications)
 
       res.status(200).json({
         message: 'Notifications fetched successfully.',
@@ -31,12 +41,14 @@ export const notificationController = {
     }
   },
 
-
-  getUnreadNotifications: async (req, res) => {
+  getUnreadNotifications: async (io, req, res) => {
     try {
       const userId = req.user.id;
-      const notifications = await Notification.find({ userId, isRead: false })
-        .sort({ createdAt: -1 });
+      const notifications = await Notification.find({ userId, isRead: false }).sort({
+        createdAt: -1,
+      });
+      io.emit('get-notification',notifications)
+
 
       res.status(200).json({
         message: 'Unread notifications fetched successfully.',
@@ -48,7 +60,7 @@ export const notificationController = {
     }
   },
 
-markAsRead: async (req, res) => {
+  markAsRead: async (io, req, res) => {
     try {
       const notificationId = req.params.notificationId;
       const notification = await Notification.findById(notificationId);
@@ -56,6 +68,7 @@ markAsRead: async (req, res) => {
       if (!notification) {
         return res.status(404).json({ message: 'Notification not found.' });
       }
+      io.emit('get-notification',notifications)
 
       notification.isRead = true;
       await notification.save();
@@ -70,4 +83,3 @@ markAsRead: async (req, res) => {
     }
   },
 };
-

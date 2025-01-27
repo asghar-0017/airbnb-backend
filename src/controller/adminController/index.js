@@ -57,13 +57,15 @@ export const adminController = {
         await TemporaryListing.findByIdAndDelete(listingId);
   
 
-        const notification = await notificationController.createNotification({
-          userId: hostData._id,
-          message: 'Your listing has been approved!',
-          listingId: confirmedListing._id,
-          type: 'listing',
-        });
-
+        const notification = await notificationController.createNotification(
+          {
+            userId: hostData._id,
+            message: 'Your listing has been approved!',
+            listingId: confirmedListing._id,
+            type: 'listing',
+          },
+          io 
+        );
 
 
         io.to(hostData._id.toString()).emit('listing_approved', {
@@ -72,6 +74,7 @@ export const adminController = {
           listingId: notification.listingId,
           createdAt: notification.createdAt,
         });
+    
 
       res.status(200).json({ message: 'Listing confirmed successfully.', confirmedListing });
     } catch (error) {
