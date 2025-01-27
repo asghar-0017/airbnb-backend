@@ -66,15 +66,14 @@ export const adminController = {
           },
           io 
         );
-
-
+  
         io.to(hostData._id.toString()).emit('listing_approved', {
           message: notification.message,
           notificationId: notification._id,
           listingId: notification.listingId,
           createdAt: notification.createdAt,
         });
-    
+        console.log('Emitting listing approval to host:', hostData._id);
 
       res.status(200).json({ message: 'Listing confirmed successfully.', confirmedListing });
     } catch (error) {

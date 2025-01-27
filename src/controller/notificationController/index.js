@@ -5,7 +5,6 @@ export const notificationController = {
     try {
       const notification = new Notification(data);
       const savedNotification = await notification.save();
-
       if (io && data.userId) {
         io.to(data.userId.toString()).emit('new_notification', {
           message: savedNotification.message,
@@ -13,6 +12,7 @@ export const notificationController = {
           type: savedNotification.type,
           createdAt: savedNotification.createdAt,
         });
+        console.log('Emitting new notification:', savedNotification);
       }
 
       return savedNotification;
@@ -29,9 +29,10 @@ export const notificationController = {
         .sort({ createdAt: -1 })
         .select('message isRead createdAt type listingId');
 
-      if (io) {
-        io.to(userId.toString()).emit('get_notifications', notifications);
-      }
+        if (io) {
+          io.to(userId.toString()).emit('get_notifications', notifications);
+          console.log('Emitting notifications to user:', notifications);
+        }
 
       res.status(200).json({
         message: 'Notifications fetched successfully.',
@@ -48,10 +49,10 @@ export const notificationController = {
       const userId = req.user.id;
       const notifications = await Notification.find({ userId, isRead: false })
         .sort({ createdAt: -1 });
-
-      if (io) {
-        io.to(userId.toString()).emit('get_unread_notifications', notifications);
-      }
+        if (io) {
+          io.to(userId.toString()).emit('get_unread_notifications', notifications);
+          console.log('Emitting unread notifications to user:', notifications);
+        }
 
       res.status(200).json({
         message: 'Unread notifications fetched successfully.',
@@ -80,6 +81,7 @@ export const notificationController = {
           message: 'Notification marked as read.',
           notification,
         });
+        console.log('Emitting updated notification:', notification);
       }
 
       res.status(200).json({
