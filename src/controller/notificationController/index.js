@@ -29,7 +29,9 @@ export const notificationController = {
         .sort({ createdAt: -1 })
         .select('message isRead createdAt type listingId');
 
-        io.emit('get-notification',notifications)
+      if (io) {
+        io.to(userId.toString()).emit('get_notifications', notifications);
+      }
 
       res.status(200).json({
         message: 'Notifications fetched successfully.',
@@ -44,11 +46,12 @@ export const notificationController = {
   getUnreadNotifications: async (io, req, res) => {
     try {
       const userId = req.user.id;
-      const notifications = await Notification.find({ userId, isRead: false }).sort({
-        createdAt: -1,
-      });
-      io.emit('get-notification',notifications)
+      const notifications = await Notification.find({ userId, isRead: false })
+        .sort({ createdAt: -1 });
 
+      if (io) {
+        io.to(userId.toString()).emit('get_unread_notifications', notifications);
+      }
 
       res.status(200).json({
         message: 'Unread notifications fetched successfully.',
@@ -68,10 +71,16 @@ export const notificationController = {
       if (!notification) {
         return res.status(404).json({ message: 'Notification not found.' });
       }
-      io.emit('get-notification',notifications)
 
       notification.isRead = true;
       await notification.save();
+
+      if (io) {
+        io.to(notification.userId.toString()).emit('notification_updated', {
+          message: 'Notification marked as read.',
+          notification,
+        });
+      }
 
       res.status(200).json({
         message: 'Notification marked as read successfully.',
