@@ -151,7 +151,31 @@ export const adminController = {
     } catch (error) {
       res.status(500).send({ message: "Internal Server Error", error: error.message });
     }
+  },
+  getApprovedListings: async (io, req, res) => {
+    try {
+      const approvedListings = await ListingModel.find().populate('hostId');
+      if (!approvedListings.length) {
+        return res.status(200).json({ message: 'No approved listings found.', listings: [] });
+      }
+  
+      const transformedListings = approvedListings.map(listing => {
+        const listingObject = listing.toObject();
+        if (listing.hostId) {
+          listingObject.hostData = listing.hostId; 
+        }
+        delete listingObject.hostId; 
+        return listingObject;
+      });
+  
+      io.emit('receive_approbed-listing', transformedListings); 
+      res.status(200).json({ message: 'Approved listings fetched successfully.', listings: transformedListings });
+    } catch (error) {
+      console.error('Error fetching approved listings:', error);
+      res.status(500).json({ message: 'Internal Server Error', error: error.message });
+    }
   }
+  
   
   
 };

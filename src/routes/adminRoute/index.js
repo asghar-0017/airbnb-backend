@@ -8,6 +8,7 @@ const AdminRoute = (app,io) => {
     app.get('/pending-cnic-verifications', combinedAuthenticate, checkRole(['admin']),(req, res) =>  adminController.getPendingCNICVerifications(io, req, res));
     app.put('/verify-cnic/:hostId',combinedAuthenticate, checkRole(['admin']),(req, res) => adminController.verifyCNIC(io, req, res));
     app.get('/get-temporary-listing/:listingId', combinedAuthenticate, checkRole(['admin']),(req, res) => adminController.getTemporaryListing(io, req, res));
+    app.get('/approved-listings', combinedAuthenticate, checkRole(['admin']), (req, res) => adminController.getApprovedListings(io, req, res));
 
 };
 
