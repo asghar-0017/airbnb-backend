@@ -7,6 +7,18 @@ export default function initializeSocket(io) {
 
     console.log(`User connected: ${socket.id}`); 
 
+
+    socket.on("register_user", (userId) => {
+      if (!userId) {
+        console.error("No userId provided for register_user.");
+        return;
+      }
+
+      socket.join(userId.toString());
+      console.log(`Socket ID ${socket.id} joined room for user: ${userId}`);
+    });
+
+
     socket.on("join_room", (chatRoomId) => {
       if (!chatRoomId) {
         console.error("No chatRoomId provided for join_room.");

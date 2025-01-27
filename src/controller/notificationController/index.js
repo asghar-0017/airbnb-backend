@@ -27,12 +27,7 @@ export const notificationController = {
       const userId = req.user.id;
       const notifications = await Notification.find({ userId })
         .sort({ createdAt: -1 })
-        .select('message isRead createdAt type listingId');
-
-        if (io) {
-          io.emit('get_notifications', notifications);
-          console.log('Emitting notifications to user:', notifications);
-        }
+        .select('message isRead createdAt type listingId')
 
       res.status(200).json({
         message: 'Notifications fetched successfully.',
