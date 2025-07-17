@@ -7,6 +7,8 @@ const AdminAuthRoute = (app) => {
   app.put('/reset-password', adminAuth.resetPassword);
   app.get('/logout', adminAuth.logout);
   app.get('/verify-token', adminAuth.verifyToken);
+
+  app.get('/get-user', adminAuth.getUser);
 };
 
 export default AdminAuthRoute;

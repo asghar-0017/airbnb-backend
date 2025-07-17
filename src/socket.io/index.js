@@ -1,5 +1,6 @@
 export default function initializeSocket(io) {
   io.on("connection", (socket) => {
+
     if (!socket.id) {
       console.error("Socket ID is undefined! Connection failed.");
       return;

@@ -2,6 +2,7 @@ import adminService from '../../service/AdminAuthService/index.js';
 import generateResetCode from '../../mediater/generateResetCode/index.js';
 import sendResetEmail from '../../mediater/sendReserEmail/index.js';
 import dotenv from 'dotenv';
+import hostModel from '../../model/hostModel/index.js';
 
 dotenv.config();
 const adminAuth = {
@@ -102,7 +103,18 @@ const adminAuth = {
       res.status(500).send({ message: 'Internal Server Error', error: error.message });
     }
   },
-  
+  getUser:async (req,res)=>{
+    try{
+          const users = await hostModel.find({})
+      if (users) {
+        res.status(200).send({ users });
+      } else {
+        res.status(404).send({ message: 'User not found' });
+      }
+    } catch (error) {
+      res.status(500).send({ message: 'Internal Server Error', error: error.message });
+    }
+  }
 };
 
-export default adminAuth;
+export default adminAuth
